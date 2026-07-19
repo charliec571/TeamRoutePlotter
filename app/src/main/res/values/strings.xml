@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Team Route Plotter</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="action_add_point">Add Point</string>
+    <string name="action_share">Share Route</string>
+    <string name="dialog_point_name_title">Name this location</string>
+    <string name="dialog_add">Add</string>
+    <string name="dialog_cancel">Cancel</string>
+</resources>
