@@ -17,6 +17,8 @@ export interface Group {
 export interface Competition {
   id: string
   name: string
+  location?: string
+  date?: string
   points: PointOfInterest[]
   groups: Group[]
   createdAt: number

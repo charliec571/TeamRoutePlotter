@@ -18,8 +18,29 @@
       rel="stylesheet"
     />
     <title>Team Route Plotter</title>
+    <style>
+      #initial-splash {
+        position: fixed;
+        inset: 0;
+        background-color: #F3F1E9; /* Match the beige background of the image */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+      #initial-splash img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+    </style>
   </head>
   <body>
+    <div id="initial-splash">
+      <img src="/splash.jpg" alt="Raiders Routes" />
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

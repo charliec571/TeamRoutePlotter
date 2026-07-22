@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { AddPointDialog } from './components/AddPointDialog'
 import { CompetitionHub } from './components/CompetitionHub'
 import { GroupRoute } from './components/GroupRoute'
@@ -6,6 +6,8 @@ import { HomeScreen } from './components/HomeScreen'
 import { MapView, type MapBasemap, type MapFlyTarget } from './components/MapView'
 import { PlaceSearch } from './components/PlaceSearch'
 import { useCompetitions } from './hooks/useCompetitions'
+import { useAuth } from './hooks/useAuth'
+import { AdminLoginModal } from './components/AdminLoginModal'
 import type { Screen } from './types'
 import { resolveRoute } from './utils/storage'
 import './App.css'
@@ -27,24 +29,63 @@ export default function App() {
     setGroupRouteOrder,
     shuffleGroupRoute,
     getCompetition,
+    loading,
   } = useCompetitions()
+
+  const { isAdmin, login, logout } = useAuth()
+  const [showLogin, setShowLogin] = useState(false)
 
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [pending, setPending] = useState<PendingPoint | null>(null)
   const [flyTo, setFlyTo] = useState<MapFlyTarget | null>(null)
-  const [basemap, setBasemap] = useState<MapBasemap>('street')
+  const [basemap, setBasemap] = useState<MapBasemap>('satellite')
 
   const handleLongPress = useCallback((latitude: number, longitude: number) => {
     setPending({ latitude, longitude })
   }, [])
+
+  useEffect(() => {
+    if (!loading) {
+      const splash = document.getElementById('initial-splash')
+      if (splash) {
+        splash.style.opacity = '0'
+        splash.style.visibility = 'hidden'
+        setTimeout(() => splash.remove(), 500)
+      }
+    }
+  }, [loading])
+
+  if (loading) {
+    return null
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="spectator-screen" style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <img 
+            src="/splash.jpg" 
+            alt="Raiders Routes" 
+            style={{ width: '120px', cursor: 'pointer', borderRadius: '16px', border: '1px solid rgba(244,247,245,0.1)' }}
+            onClick={() => setShowLogin(true)}
+          />
+          <p style={{ marginTop: '1.25rem', color: 'rgba(244,247,245,0.5)', fontSize: '0.85rem' }}>
+            Tap logo for Admin Login
+          </p>
+        </div>
+        
+        {showLogin && <AdminLoginModal onLogin={login} onClose={() => setShowLogin(false)} />}
+      </div>
+    )
+  }
 
   if (screen.name === 'home') {
     return (
       <div className="app">
         <HomeScreen
           competitions={competitions}
-          onCreate={(name) => {
-            const id = createCompetition(name)
+          onCreate={(name, location, date) => {
+            const id = createCompetition(name, location, date)
             setScreen({ name: 'competition', competitionId: id, tab: 'points' })
           }}
           onOpen={(competitionId) =>
@@ -52,6 +93,11 @@ export default function App() {
           }
           onDelete={deleteCompetition}
         />
+        <div style={{ padding: '1rem', textAlign: 'center' }}>
+          <button type="button" className="btn btn--ghost" onClick={logout} style={{ fontSize: '0.75rem', color: 'rgba(244,247,245,0.4)' }}>
+            Log out
+          </button>
+        </div>
       </div>
     )
   }
@@ -62,8 +108,8 @@ export default function App() {
       <div className="app">
         <HomeScreen
           competitions={competitions}
-          onCreate={(name) => {
-            const id = createCompetition(name)
+          onCreate={(name, location, date) => {
+            const id = createCompetition(name, location, date)
             setScreen({ name: 'competition', competitionId: id, tab: 'points' })
           }}
           onOpen={(competitionId) =>

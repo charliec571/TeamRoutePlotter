@@ -1,5 +1,5 @@
-/** DEV: fixed position for Concordia Lutheran HS, Fort Wayne. Set null for real GPS. */
-export const DEV_FIXED_LOCATION: [number, number] | null = [41.10995, -85.11791]
+/** Set to a [lat, lng] pair to override GPS during development, or null for real GPS. */
+export const DEV_FIXED_LOCATION: [number, number] | null = null
 
 export interface GeoPosition {
   latitude: number
