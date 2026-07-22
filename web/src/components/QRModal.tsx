@@ -8,7 +8,8 @@ interface QRModalProps {
 }
 
 export function QRModal({ competitionId, competitionName, onClose }: QRModalProps) {
-  const url = `${window.location.origin}/view/${competitionId}`
+  // We use pathname and a hash (#) because of GitHub Pages / HashRouter setup
+  const url = `${window.location.origin}${window.location.pathname}#/view/${competitionId}`
   const backdropRef = useRef<HTMLDivElement>(null)
 
   // Close on Escape
