@@ -87,7 +87,7 @@ export function SpectatorView() {
             onClick={() => setShowAdminLogin(true)}
             aria-label="Admin Login"
           >
-            <img src="/splash.jpg" alt="Admin" style={{ width: '44px', height: '44px', objectFit: 'cover' }} />
+            <img src="/emblem.png" alt="Admin" style={{ width: '44px', height: '44px', objectFit: 'cover' }} />
           </button>
         </div>
         {(competition.location || competition.date) && (
