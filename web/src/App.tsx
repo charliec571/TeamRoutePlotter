@@ -75,8 +75,8 @@ export default function App() {
             </div>
             <button
               type="button"
-              className="btn btn--ghost btn--icon"
-              style={{ padding: 0, margin: 0, overflow: 'hidden', borderRadius: '12px' }}
+              className="btn btn--ghost"
+              style={{ padding: 0, margin: 0, background: 'transparent' }}
               onClick={() => setShowLogin(true)}
               aria-label="Admin Login"
             >
