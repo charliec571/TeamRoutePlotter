@@ -756,7 +756,8 @@
     margin: 0 auto;
   }
 
-  .app--map {
+  .app--map,
+  .spectator-screen {
     border-left: 1px solid rgba(244, 247, 245, 0.08);
     border-right: 1px solid rgba(244, 247, 245, 0.08);
   }
