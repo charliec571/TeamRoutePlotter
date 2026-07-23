@@ -80,7 +80,7 @@ export default function App() {
               onClick={() => setShowLogin(true)}
               aria-label="Admin Login"
             >
-              <img src="/emblem.png" alt="Admin" style={{ width: '44px', height: '44px', objectFit: 'cover' }} />
+              <img src={`${import.meta.env.BASE_URL}emblem.png`} alt="Admin" style={{ width: '44px', height: '44px', objectFit: 'cover' }} />
             </button>
           </div>
         </header>
