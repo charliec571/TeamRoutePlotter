@@ -28,12 +28,14 @@ export function SpectatorView() {
 
   useEffect(() => {
     if (!loading) {
-      const splash = document.getElementById('initial-splash')
-      if (splash) {
-        splash.style.opacity = '0'
-        splash.style.visibility = 'hidden'
-        setTimeout(() => splash.remove(), 500)
-      }
+      setTimeout(() => {
+        const splash = document.getElementById('initial-splash')
+        if (splash) {
+          splash.style.opacity = '0'
+          splash.style.visibility = 'hidden'
+          setTimeout(() => splash.remove(), 500)
+        }
+      }, 2000)
     }
   }, [loading])
 
