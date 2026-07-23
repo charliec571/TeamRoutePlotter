@@ -750,7 +750,8 @@
 @media (min-width: 768px) {
   .app--map,
   .route-screen,
-  .panel-screen {
+  .panel-screen,
+  .spectator-screen {
     max-width: 430px;
     margin: 0 auto;
   }
