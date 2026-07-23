@@ -8,6 +8,7 @@ import { PlaceSearch } from './components/PlaceSearch'
 import { useCompetitions } from './hooks/useCompetitions'
 import { useAuth } from './hooks/useAuth'
 import { AdminLoginModal } from './components/AdminLoginModal'
+import { Link } from 'react-router-dom'
 import type { Screen } from './types'
 import { resolveRoute } from './utils/storage'
 import './App.css'
@@ -61,17 +62,57 @@ export default function App() {
 
   if (!isAdmin) {
     return (
-      <div className="spectator-screen" style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <img 
-            src="/splash.jpg" 
-            alt="Raiders Routes" 
-            style={{ width: '120px', cursor: 'pointer', borderRadius: '16px', border: '1px solid rgba(244,247,245,0.1)' }}
-            onClick={() => setShowLogin(true)}
-          />
-          <p style={{ marginTop: '1.25rem', color: 'rgba(244,247,245,0.5)', fontSize: '0.85rem' }}>
-            Tap logo for Admin Login
-          </p>
+      <div className="spectator-screen">
+        <header className="spectator-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div className="spectator-header__eyebrow">
+                <span className="spectator-badge">Welcome</span>
+              </div>
+              <h1 className="spectator-header__title">Active Meets</h1>
+            </div>
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon"
+              style={{ padding: 0, margin: 0, overflow: 'hidden', borderRadius: '12px' }}
+              onClick={() => setShowLogin(true)}
+              aria-label="Admin Login"
+            >
+              <img src="/splash.jpg" alt="Admin" style={{ width: '44px', height: '44px', objectFit: 'cover' }} />
+            </button>
+          </div>
+        </header>
+
+        <div style={{ padding: '0 1rem', marginTop: '1rem' }}>
+          {competitions.length === 0 ? (
+            <div className="spectator-empty">
+              <p>No active meets right now.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {competitions.map((comp) => (
+                <Link
+                  key={comp.id}
+                  to={`/view/${comp.id}`}
+                  style={{
+                    display: 'block',
+                    padding: '1.25rem',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    borderRadius: '16px',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                  }}
+                >
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{comp.name}</h3>
+                  <div style={{ display: 'flex', gap: '1rem', color: 'rgba(244,247,245,0.6)', fontSize: '0.85rem' }}>
+                    {comp.location && <span>📍 {comp.location}</span>}
+                    {comp.date && <span>📅 {comp.date}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         
         {showLogin && <AdminLoginModal onLogin={login} onClose={() => setShowLogin(false)} />}
