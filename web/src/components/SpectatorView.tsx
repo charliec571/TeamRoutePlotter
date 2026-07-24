@@ -13,13 +13,29 @@ export function SpectatorView() {
   const { login } = useAuth()
   const [showAdminLogin, setShowAdminLogin] = useState(false)
   const { competition, loading, error } = usePublicCompetition(competitionId ?? '')
-  const [selectedGroupId, setSelectedGroupId] = useState<string>('')
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('')
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
   const [navigatePoint, setNavigatePoint] = useState<PointOfInterest | null>(null)
 
-  const selectedGroup = useMemo(
-    () => competition?.groups.find((g) => g.id === selectedGroupId) ?? null,
-    [competition, selectedGroupId],
+  const selectedSchool = useMemo(
+    () => competition?.schools.find((s) => s.id === selectedSchoolId) ?? null,
+    [competition, selectedSchoolId],
   )
+
+  const selectedTeam = useMemo(
+    () => selectedSchool?.teams.find((t) => t.id === selectedTeamId) ?? null,
+    [selectedSchool, selectedTeamId],
+  )
+
+  const selectedGroup = useMemo(
+    () => competition?.groups.find((g) => g.id === selectedTeam?.groupId) ?? null,
+    [competition, selectedTeam],
+  )
+
+  // Reset team when school changes
+  useEffect(() => {
+    setSelectedTeamId('')
+  }, [selectedSchoolId])
 
   const orderedPoints = useMemo(() => {
     if (!competition || !selectedGroup) return []
@@ -110,22 +126,22 @@ export function SpectatorView() {
         )}
       </header>
 
-      {/* Team Selector */}
-      <div className="spectator-selector">
-        <label className="spectator-selector__label" htmlFor="team-select">
-          Select Your Team
+      {/* Selectors */}
+      <div className="spectator-selector" style={{ marginBottom: '0.5rem' }}>
+        <label className="spectator-selector__label" htmlFor="school-select">
+          Select Your School
         </label>
         <div className="spectator-selector__wrap">
           <select
-            id="team-select"
+            id="school-select"
             className="spectator-select"
-            value={selectedGroupId}
-            onChange={(e) => setSelectedGroupId(e.target.value)}
+            value={selectedSchoolId}
+            onChange={(e) => setSelectedSchoolId(e.target.value)}
           >
-            <option value="">— Choose a team —</option>
-            {competition.groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
+            <option value="">— Choose a school —</option>
+            {competition.schools.map((school) => (
+              <option key={school.id} value={school.id}>
+                {school.name}
               </option>
             ))}
           </select>
@@ -134,6 +150,32 @@ export function SpectatorView() {
           </svg>
         </div>
       </div>
+
+      {selectedSchool && (
+        <div className="spectator-selector">
+          <label className="spectator-selector__label" htmlFor="team-select">
+            Select Your Team
+          </label>
+          <div className="spectator-selector__wrap">
+            <select
+              id="team-select"
+              className="spectator-select"
+              value={selectedTeamId}
+              onChange={(e) => setSelectedTeamId(e.target.value)}
+            >
+              <option value="">— Choose a team —</option>
+              {selectedSchool.teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+            <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+      )}
 
       {/* Route List */}
       {selectedGroup && orderedPoints.length > 0 ? (
@@ -171,14 +213,18 @@ export function SpectatorView() {
             Directions are straight-line (line of sight), not turn-by-turn roads.
           </div>
         </div>
+      ) : selectedTeam && !selectedGroup ? (
+        <div className="spectator-empty">
+          <p>This Team has not yet been associated with a route.</p>
+        </div>
       ) : selectedGroup ? (
         <div className="spectator-empty">
-          <p>No events configured for this meet yet.</p>
+          <p>No events configured for this group yet.</p>
         </div>
       ) : (
         <div className="spectator-prompt">
           <div className="spectator-prompt__icon">👆</div>
-          <p>Select your team above to see<br />your event rotation.</p>
+          <p>Select your school and team above to see<br />your event rotation.</p>
         </div>
       )}
     </section>

@@ -4,14 +4,19 @@ import { QRModal } from './QRModal'
 
 interface CompetitionHubProps {
   competition: Competition
-  tab: 'points' | 'groups'
-  onTabChange: (tab: 'points' | 'groups') => void
+  tab: 'points' | 'groups' | 'schools'
+  onTabChange: (tab: 'points' | 'groups' | 'schools') => void
   onBack: () => void
   onOpenMap: () => void
   onOpenGroup: (groupId: string) => void
   onAddGroup: (name: string) => void
   onDeleteGroup: (groupId: string) => void
   onRemovePoint: (pointId: string) => void
+  onAddSchool: (name: string) => void
+  onDeleteSchool: (schoolId: string) => void
+  onAddTeam: (schoolId: string, name: string) => void
+  onDeleteTeam: (schoolId: string, teamId: string) => void
+  onSetTeamGroup: (schoolId: string, teamId: string, groupId: string | null) => void
 }
 
 export function CompetitionHub({
@@ -24,9 +29,18 @@ export function CompetitionHub({
   onAddGroup,
   onDeleteGroup,
   onRemovePoint,
+  onAddSchool,
+  onDeleteSchool,
+  onAddTeam,
+  onDeleteTeam,
+  onSetTeamGroup,
 }: CompetitionHubProps) {
   const [addingGroup, setAddingGroup] = useState(false)
   const [groupName, setGroupName] = useState('')
+  const [addingSchool, setAddingSchool] = useState(false)
+  const [schoolName, setSchoolName] = useState('')
+  const [addingTeamToSchool, setAddingTeamToSchool] = useState<string | null>(null)
+  const [teamName, setTeamName] = useState('')
   const [showQR, setShowQR] = useState(false)
 
   const handleAddGroup = (event: FormEvent) => {
@@ -95,9 +109,18 @@ export function CompetitionHub({
         >
           Groups ({competition.groups.length})
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'schools'}
+          className={`segmented__btn${tab === 'schools' ? ' is-active' : ''}`}
+          onClick={() => onTabChange('schools')}
+        >
+          Schools ({competition.schools.length})
+        </button>
       </div>
 
-      {tab === 'points' ? (
+      {tab === 'points' && (
         <div className="panel-body">
           <p className="hint">
             Shared areas of interest for every group. Map them once, then reorder per group.
@@ -135,7 +158,9 @@ export function CompetitionHub({
             </ul>
           )}
         </div>
-      ) : (
+      )}
+      
+      {tab === 'groups' && (
         <div className="panel-body">
           <p className="hint">
             Each group uses the same points in a different order. New groups get a shuffled route.
@@ -209,6 +234,83 @@ export function CompetitionHub({
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+      )}
+
+      {tab === 'schools' && (
+        <div className="panel-body">
+          <p className="hint">
+            Add schools, then add teams to each school and assign them a route group.
+          </p>
+
+          {addingSchool ? (
+            <form className="create-form" onSubmit={(e) => {
+              e.preventDefault()
+              if (!schoolName.trim()) return
+              onAddSchool(schoolName.trim())
+              setSchoolName('')
+              setAddingSchool(false)
+            }}>
+              <label className="field-label" htmlFor="school-name">School name</label>
+              <input id="school-name" className="field" type="text" placeholder="e.g. Concordia" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} autoFocus autoComplete="off" />
+              <div className="dialog__actions">
+                <button type="button" className="btn btn--ghost" onClick={() => setAddingSchool(false)}>Cancel</button>
+                <button type="submit" className="btn btn--primary" disabled={!schoolName.trim()}>Add school</button>
+              </div>
+            </form>
+          ) : (
+            <button type="button" className="btn btn--primary btn--block" onClick={() => setAddingSchool(true)}>Add school</button>
+          )}
+
+          {competition.schools.length > 0 && (
+            <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {competition.schools.map((school) => (
+                <div key={school.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{school.name}</h3>
+                    <button type="button" className="btn btn--ghost btn--icon" onClick={() => {
+                      if (window.confirm(`Delete school "${school.name}"?`)) onDeleteSchool(school.id)
+                    }}>×</button>
+                  </div>
+
+                  {school.teams.map((team) => (
+                    <div key={team.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '8px' }}>
+                      <strong style={{ flex: 1, paddingLeft: '0.5rem' }}>{team.name}</strong>
+                      <select 
+                        value={team.groupId || ''}
+                        onChange={(e) => onSetTeamGroup(school.id, team.id, e.target.value || null)}
+                        style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', background: 'var(--color-bg)', color: 'var(--color-text)', border: '1px solid rgba(255,255,255,0.2)' }}
+                      >
+                        <option value="">-- No Group --</option>
+                        {competition.groups.map(g => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                      <button type="button" className="btn btn--ghost btn--icon" onClick={() => onDeleteTeam(school.id, team.id)}>×</button>
+                    </div>
+                  ))}
+
+                  {addingTeamToSchool === school.id ? (
+                    <form style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }} onSubmit={(e) => {
+                      e.preventDefault()
+                      if (!teamName.trim()) return
+                      onAddTeam(school.id, teamName.trim())
+                      setTeamName('')
+                      setAddingTeamToSchool(null)
+                    }}>
+                      <input type="text" className="field" placeholder="Team name (e.g. A)" value={teamName} onChange={(e) => setTeamName(e.target.value)} autoFocus style={{ margin: 0 }} />
+                      <button type="submit" className="btn btn--primary" style={{ padding: '0 1rem' }}>Add</button>
+                      <button type="button" className="btn btn--ghost" onClick={() => setAddingTeamToSchool(null)}>Cancel</button>
+                    </form>
+                  ) : (
+                    <button type="button" className="btn btn--ghost" style={{ marginTop: '0.5rem', width: '100%', border: '1px dashed rgba(255,255,255,0.2)' }} onClick={() => setAddingTeamToSchool(school.id)}>
+                      + Add Team
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

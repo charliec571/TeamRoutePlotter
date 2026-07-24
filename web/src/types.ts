@@ -13,6 +13,18 @@ export interface Group {
   routeOrder: string[]
 }
 
+export interface Team {
+  id: string
+  name: string
+  groupId: string | null
+}
+
+export interface School {
+  id: string
+  name: string
+  teams: Team[]
+}
+
 /** A competition owns a shared pool of points; each group orders them differently. */
 export interface Competition {
   id: string
@@ -21,11 +33,12 @@ export interface Competition {
   date?: string
   points: PointOfInterest[]
   groups: Group[]
+  schools: School[]
   createdAt: number
 }
 
 export type Screen =
   | { name: 'home' }
-  | { name: 'competition'; competitionId: string; tab: 'points' | 'groups' }
+  | { name: 'competition'; competitionId: string; tab: 'points' | 'groups' | 'schools' }
   | { name: 'map'; competitionId: string }
   | { name: 'group-route'; competitionId: string; groupId: string }

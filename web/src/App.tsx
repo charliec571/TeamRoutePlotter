@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AddPointDialog } from './components/AddPointDialog'
 import { CompetitionHub } from './components/CompetitionHub'
 import { GroupRoute } from './components/GroupRoute'
@@ -7,8 +8,6 @@ import { MapView, type MapBasemap, type MapFlyTarget } from './components/MapVie
 import { PlaceSearch } from './components/PlaceSearch'
 import { useCompetitions } from './hooks/useCompetitions'
 import { useAuth } from './hooks/useAuth'
-import { AdminLoginModal } from './components/AdminLoginModal'
-import { Link } from 'react-router-dom'
 import type { Screen } from './types'
 import { resolveRoute } from './utils/storage'
 import './App.css'
@@ -27,14 +26,19 @@ export default function App() {
     removePoint,
     addGroup,
     deleteGroup,
+    addSchool,
+    deleteSchool,
+    addTeam,
+    deleteTeam,
+    setTeamGroup,
     setGroupRouteOrder,
     shuffleGroupRoute,
     getCompetition,
     loading,
   } = useCompetitions()
 
-  const { isAdmin, login, logout } = useAuth()
-  const [showLogin, setShowLogin] = useState(false)
+  const { isAdmin, logout } = useAuth()
+  const navigate = useNavigate()
 
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [pending, setPending] = useState<PendingPoint | null>(null)
@@ -45,81 +49,15 @@ export default function App() {
     setPending({ latitude, longitude })
   }, [])
 
+  // If somehow a non-admin ends up at /admin, bounce them back to the public home
   useEffect(() => {
-    if (!loading) {
-      setTimeout(() => {
-        const splash = document.getElementById('initial-splash')
-        if (splash) {
-          splash.style.opacity = '0'
-          splash.style.visibility = 'hidden'
-          setTimeout(() => splash.remove(), 500)
-        }
-      }, 2000)
+    if (!loading && !isAdmin) {
+      navigate('/', { replace: true })
     }
-  }, [loading])
+  }, [loading, isAdmin, navigate])
 
-  if (loading) {
+  if (loading || !isAdmin) {
     return null
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="spectator-screen">
-        <header className="spectator-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div className="spectator-header__eyebrow">
-                <span className="spectator-badge">Welcome</span>
-              </div>
-              <h1 className="spectator-header__title">Active Meets</h1>
-            </div>
-            <button
-              type="button"
-              className="btn btn--ghost"
-              style={{ padding: 0, margin: 0, background: 'transparent' }}
-              onClick={() => setShowLogin(true)}
-              aria-label="Admin Login"
-            >
-              <img src={`${import.meta.env.BASE_URL}emblem.png`} alt="Admin" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
-            </button>
-          </div>
-        </header>
-
-        <div style={{ padding: '0 1rem', marginTop: '1rem' }}>
-          {competitions.length === 0 ? (
-            <div className="spectator-empty">
-              <p>No active meets right now.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {competitions.map((comp) => (
-                <Link
-                  key={comp.id}
-                  to={`/view/${comp.id}`}
-                  style={{
-                    display: 'block',
-                    padding: '1.25rem',
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    borderRadius: '16px',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                  }}
-                >
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{comp.name}</h3>
-                  <div style={{ display: 'flex', gap: '1rem', color: 'rgba(244,247,245,0.6)', fontSize: '0.85rem' }}>
-                    {comp.location && <span>📍 {comp.location}</span>}
-                    {comp.date && <span>📅 {comp.date}</span>}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {showLogin && <AdminLoginModal onLogin={login} onClose={() => setShowLogin(false)} />}
-      </div>
-    )
   }
 
   if (screen.name === 'home') {
@@ -137,8 +75,13 @@ export default function App() {
           onDelete={deleteCompetition}
         />
         <div style={{ padding: '1rem', textAlign: 'center' }}>
-          <button type="button" className="btn btn--ghost" onClick={logout} style={{ fontSize: '0.75rem', color: 'rgba(244,247,245,0.4)' }}>
-            Log out
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => { logout(); navigate('/') }}
+            style={{ fontSize: '0.75rem', color: 'rgba(244,247,245,0.4)' }}
+          >
+            Exit Admin Mode
           </button>
         </div>
       </div>
@@ -181,6 +124,11 @@ export default function App() {
           onAddGroup={(name) => addGroup(competition.id, name, true)}
           onDeleteGroup={(groupId) => deleteGroup(competition.id, groupId)}
           onRemovePoint={(pointId) => removePoint(competition.id, pointId)}
+          onAddSchool={(name) => addSchool(competition.id, name)}
+          onDeleteSchool={(schoolId) => deleteSchool(competition.id, schoolId)}
+          onAddTeam={(schoolId, name) => addTeam(competition.id, schoolId, name)}
+          onDeleteTeam={(schoolId, teamId) => deleteTeam(competition.id, schoolId, teamId)}
+          onSetTeamGroup={(schoolId, teamId, groupId) => setTeamGroup(competition.id, schoolId, teamId, groupId)}
         />
       </div>
     )
@@ -205,6 +153,11 @@ export default function App() {
             onAddGroup={(name) => addGroup(competition.id, name, true)}
             onDeleteGroup={(groupId) => deleteGroup(competition.id, groupId)}
             onRemovePoint={(pointId) => removePoint(competition.id, pointId)}
+            onAddSchool={(name) => addSchool(competition.id, name)}
+            onDeleteSchool={(schoolId) => deleteSchool(competition.id, schoolId)}
+            onAddTeam={(schoolId, name) => addTeam(competition.id, schoolId, name)}
+            onDeleteTeam={(schoolId, teamId) => deleteTeam(competition.id, schoolId, teamId)}
+            onSetTeamGroup={(schoolId, teamId, groupId) => setTeamGroup(competition.id, schoolId, teamId, groupId)}
           />
         </div>
       )

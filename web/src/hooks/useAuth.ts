@@ -4,13 +4,13 @@ const AUTH_KEY = 'TRP_ADMIN_AUTH'
 
 export function useAuth() {
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    return localStorage.getItem(AUTH_KEY) === 'true'
+    return sessionStorage.getItem(AUTH_KEY) === 'true'
   })
 
   const login = (pin: string): boolean => {
     const expectedPin = import.meta.env.VITE_ADMIN_PIN || '1916'
     if (pin === expectedPin) {
-      localStorage.setItem(AUTH_KEY, 'true')
+      sessionStorage.setItem(AUTH_KEY, 'true')
       setIsAdmin(true)
       return true
     }
@@ -18,7 +18,7 @@ export function useAuth() {
   }
 
   const logout = () => {
-    localStorage.removeItem(AUTH_KEY)
+    sessionStorage.removeItem(AUTH_KEY)
     setIsAdmin(false)
   }
 

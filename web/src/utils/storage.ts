@@ -7,7 +7,9 @@ export function loadCompetitions(): Competition[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as Competition[]
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed)
+      ? parsed.map((comp) => ({ ...comp, schools: comp.schools ?? [] }))
+      : []
   } catch {
     return []
   }

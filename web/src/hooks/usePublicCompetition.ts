@@ -40,6 +40,16 @@ export function usePublicCompetition(competitionId: string) {
             .select('*')
             .eq('competition_id', competitionId)
 
+          const { data: schools } = await supabase
+            .from('schools')
+            .select('*')
+            .eq('competition_id', competitionId)
+
+          const schoolIds = (schools ?? []).map((s) => s.id)
+          const { data: teams } = schoolIds.length > 0
+            ? await supabase.from('teams').select('*').in('school_id', schoolIds)
+            : { data: [] }
+
           setCompetition({
             id: comp.id,
             name: comp.name,
@@ -56,6 +66,17 @@ export function usePublicCompetition(competitionId: string) {
               id: g.id,
               name: g.name,
               routeOrder: g.route_order ?? [],
+            })),
+            schools: (schools ?? []).map((s) => ({
+              id: s.id,
+              name: s.name,
+              teams: (teams ?? [])
+                .filter((t) => t.school_id === s.id)
+                .map((t) => ({
+                  id: t.id,
+                  name: t.name,
+                  groupId: t.group_id,
+                })),
             })),
           })
         } else {
