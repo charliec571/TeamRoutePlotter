@@ -14,7 +14,11 @@ export function loadCompetitions(): Competition[] {
 }
 
 export function saveCompetitions(competitions: Competition[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(competitions))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(competitions))
+  } catch {
+    // Ignore QuotaExceededError or private browsing restrictions
+  }
 }
 
 export function resolveRoute(

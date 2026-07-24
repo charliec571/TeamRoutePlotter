@@ -688,6 +688,7 @@
   font-size: 1.15rem;
   letter-spacing: 0.05em;
   touch-action: none;
+  -webkit-touch-callout: none;
   cursor: grab;
 }
 

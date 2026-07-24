@@ -45,7 +45,7 @@ export function usePublicCompetition(competitionId: string) {
             name: comp.name,
             location: comp.location ?? '',
             date: comp.date ?? '',
-            createdAt: new Date(comp.created_at).getTime(),
+            createdAt: new Date(comp.created_at.replace(' ', 'T')).getTime(),
             points: (points ?? []).map((p) => ({
               id: p.id,
               name: p.name,

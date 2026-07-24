@@ -24,7 +24,7 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
     name: comp.name,
     location: comp.location ?? '',
     date: comp.date ?? '',
-    createdAt: new Date(comp.created_at).getTime(),
+    createdAt: new Date(comp.created_at.replace(' ', 'T')).getTime(),
     points: (allPoints ?? [])
       .filter((p) => p.competition_id === comp.id)
       .map((p) => ({
