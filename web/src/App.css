@@ -433,6 +433,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  max-height: 20rem; /* approx height for 4 items */
+  overflow-y: auto;
 }
 
 .card-row {
