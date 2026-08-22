@@ -603,6 +603,12 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.spectator-point-list {
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+
 .point-item {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -913,6 +919,10 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  max-height: 20rem; /* approx height for 4-5 items */
+  overflow-y: auto;
+}
+
 }
 
 .spectator-point-item {

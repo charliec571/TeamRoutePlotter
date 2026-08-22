@@ -9,7 +9,7 @@
   "theme_color": "#0f1c18",
   "icons": [
     {
-      "src": "/TeamRoutePlotter/emblem.png",
+      "src": "https://charliec571.github.io/TeamRoutePlotter/emblem.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
