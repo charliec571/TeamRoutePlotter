@@ -1,4 +1,4 @@
-package com.example.teamrouteplotter.ui
+package com.example.raiderroutes.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.teamrouteplotter.databinding.FragmentRouteListBinding
-import com.example.teamrouteplotter.model.PointOfInterest
+import com.example.raiderroutes.databinding.FragmentRouteListBinding
+import com.example.raiderroutes.model.PointOfInterest
 import java.io.Serializable
 
 class RouteListFragment : Fragment() {

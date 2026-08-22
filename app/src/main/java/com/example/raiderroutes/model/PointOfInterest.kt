@@ -1,4 +1,4 @@
-package com.example.teamrouteplotter.model
+package com.example.raiderroutes.model
 
 import java.io.Serializable
 

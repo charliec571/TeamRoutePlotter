@@ -1,13 +1,15 @@
 {
-  "name": "Team Route Plotter",
-  "short_name": "RoutePlot",
-  "start_url": "/",
+  "name": "Raider Routes",
+  "short_name": "Raider Routes",
+  "id": "/TeamRoutePlotter/",
+  "start_url": "/TeamRoutePlotter/",
+  "scope": "/TeamRoutePlotter/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0f1c18",
   "icons": [
     {
-      "src": "/emblem.png",
+      "src": "/TeamRoutePlotter/emblem.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

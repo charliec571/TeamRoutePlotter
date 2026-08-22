@@ -1,9 +1,9 @@
-package com.example.teamrouteplotter.ui
+package com.example.raiderroutes.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.teamrouteplotter.R
-import com.example.teamrouteplotter.databinding.ActivityMainBinding
+import com.example.raiderroutes.R
+import com.example.raiderroutes.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

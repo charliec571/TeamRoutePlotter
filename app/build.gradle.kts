@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.teamrouteplotter"
+    namespace = "com.example.raiderroutes"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.teamrouteplotter"
+        applicationId = "com.example.raiderroutes"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

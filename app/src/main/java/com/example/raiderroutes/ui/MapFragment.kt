@@ -1,4 +1,4 @@
-package com.example.teamrouteplotter.ui
+package com.example.raiderroutes.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.example.teamrouteplotter.R
-import com.example.teamrouteplotter.databinding.FragmentMapBinding
-import com.example.teamrouteplotter.model.PointOfInterest
+import com.example.raiderroutes.R
+import com.example.raiderroutes.databinding.FragmentMapBinding
+import com.example.raiderroutes.model.PointOfInterest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback

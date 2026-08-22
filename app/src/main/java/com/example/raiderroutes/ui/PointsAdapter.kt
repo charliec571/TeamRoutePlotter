@@ -1,10 +1,10 @@
-package com.example.teamrouteplotter.ui
+package com.example.raiderroutes.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.teamrouteplotter.databinding.ItemPointBinding
-import com.example.teamrouteplotter.model.PointOfInterest
+import com.example.raiderroutes.databinding.ItemPointBinding
+import com.example.raiderroutes.model.PointOfInterest
 import java.util.Collections
 
 class PointsAdapter(private val points: MutableList<PointOfInterest>) :
