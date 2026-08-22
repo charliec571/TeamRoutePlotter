@@ -155,7 +155,9 @@ export function SpectatorView() {
       {/* Route List */}
       {selectedGroup && orderedPoints.length > 0 ? (
         <div className="spectator-route">
-          <p className="spectator-route__label">Your event order — tap any stop for directions</p>
+          <p className="spectator-route__label">
+            Your event order ({orderedPoints.length} stop{orderedPoints.length === 1 ? '' : 's'}) — scroll &amp; tap for directions
+          </p>
           <ol className="spectator-point-list">
             {orderedPoints.map((point, index) => (
               <li key={point.id} className="spectator-point-item">
