@@ -919,7 +919,7 @@
   margin: 0;
   padding: 0 0.25rem 0 0;
   list-style: none;
-  max-height: 15.5rem; /* peek effect: cuts off the next item halfway to indicate scroll */
+  max-height: 24.2rem; /* peek effect: shows 5 1/2 events */
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
