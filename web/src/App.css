@@ -923,8 +923,6 @@
   overflow-y: auto;
 }
 
-}
-
 .spectator-point-item {
   display: flex;
   flex-direction: column;
