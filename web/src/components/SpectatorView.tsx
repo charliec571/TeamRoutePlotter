@@ -69,9 +69,7 @@ export function SpectatorView() {
         <div className="spectator-error__icon">⚠️</div>
         <h1>Meet Not Found</h1>
         <p>{error ?? 'This link may be invalid or the meet has been deleted.'}</p>
-        <Link to="/" className="btn btn--primary">
-          Go Home
-        </Link>
+        <Link to="/" className="btn btn--primary">Go Home</Link>
       </div>
     )
   }
@@ -93,9 +91,7 @@ export function SpectatorView() {
       <header className="spectator-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div className="spectator-header__eyebrow">
-              <span className="spectator-badge">JROTC Raiders</span>
-            </div>
+            <div className="spectator-header__eyebrow"><span className="spectator-badge">JROTC Raiders</span></div>
             <h1 className="spectator-header__title">{competition.name}</h1>
           </div>
           <button
@@ -128,153 +124,64 @@ export function SpectatorView() {
 
       {/* Selectors */}
       <div className="spectator-selectors-row" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-  <div className="spectator-selector" style={{ flex: 1 }}>
-    <label className="spectator-selector__label" htmlFor="school-select">
-      Select Your School
-    </label>
-    <div className="spectator-selector__wrap">
-      <select
-        id="school-select"
-        className="spectator-select"
-        value={selectedSchoolId}
-        onChange={(e) => setSelectedSchoolId(e.target.value)}
-      >
-        <option value="">— Choose a school —</option>
-        {competition.schools.map((school) => (
-          <option key={school.id} value={school.id}>
-            {school.name}
-          </option>
-        ))}
-      </select>
-      <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    </div>
-  </div>
-  {selectedSchool && (
-    <div className="spectator-selector" style={{ flex: 1 }}>
-      <label className="spectator-selector__label" htmlFor="team-select">
-        Select Your Team
-      </label>
-      <div className="spectator-selector__wrap">
-        <select
-          id="team-select"
-          className="spectator-select"
-          value={selectedTeamId}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
-        >
-          <option value="">— Choose a team —</option>
-          {selectedSchool.teams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-            </option>
-          ))}
-        </select>
-        <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-    </div>
-  )}
-</div>
-        <label className="spectator-selector__label" htmlFor="school-select">
-          Select Your School
-        </label>
-        <div className="spectator-selector__wrap">
-          <select
-            id="school-select"
-            className="spectator-select"
-            value={selectedSchoolId}
-            onChange={(e) => setSelectedSchoolId(e.target.value)}
-          >
-            <option value="">— Choose a school —</option>
-            {competition.schools.map((school) => (
-              <option key={school.id} value={school.id}>
-                {school.name}
-              </option>
-            ))}
-          </select>
-          <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
-      </div>
-
-      {selectedSchool && (
-        <div className="spectator-selector">
-          <label className="spectator-selector__label" htmlFor="team-select">
-            Select Your Team
-          </label>
+        <div className="spectator-selector" style={{ flex: 1 }}>
+          <label className="spectator-selector__label" htmlFor="school-select">Select Your School</label>
           <div className="spectator-selector__wrap">
-            <select
-              id="team-select"
-              className="spectator-select"
-              value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-            >
-              <option value="">— Choose a team —</option>
-              {selectedSchool.teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
+            <select id="school-select" className="spectator-select" value={selectedSchoolId} onChange={(e) => setSelectedSchoolId(e.target.value)}>
+              <option value="">— Choose a school —</option>
+              {competition.schools.map((school) => (
+                <option key={school.id} value={school.id}>{school.name}</option>
               ))}
             </select>
-            <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
           </div>
         </div>
-      )}
+        {selectedSchool && (
+          <div className="spectator-selector" style={{ flex: 1 }}>
+            <label className="spectator-selector__label" htmlFor="team-select">Select Your Team</label>
+            <div className="spectator-selector__wrap">
+              <select id="team-select" className="spectator-select" value={selectedTeamId} onChange={(e) => setSelectedTeamId(e.target.value)}>
+                <option value="">— Choose a team —</option>
+                {selectedSchool.teams.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+              <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Route List */}
       {selectedGroup && orderedPoints.length > 0 ? (
         <div className="spectator-route">
-          <p className="spectator-route__label">
-            Your event order — tap any stop for directions
-          </p>
+          <p className="spectator-route__label">Your event order — tap any stop for directions</p>
           <ol className="spectator-point-list">
             {orderedPoints.map((point, index) => (
               <li key={point.id} className="spectator-point-item">
-                <button
-                  type="button"
-                  className="spectator-point-btn"
-                  onClick={() => setNavigatePoint(point)}
-                >
+                <button type="button" className="spectator-point-btn" onClick={() => setNavigatePoint(point)}>
                   <span className="spectator-point-index">{index + 1}</span>
                   <div className="spectator-point-body">
                     <strong>{point.name}</strong>
                     <span>Tap for line-of-sight navigation →</span>
                   </div>
-                  <svg className="spectator-point-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
+                  <svg className="spectator-point-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
-                {index < orderedPoints.length - 1 && (
-                  <div className="spectator-connector" aria-hidden="true" />
-                )}
+                {index < orderedPoints.length - 1 && <div className="spectator-connector" aria-hidden="true" />}
               </li>
             ))}
           </ol>
-
           <div className="spectator-footer-note">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Directions are straight-line (line of sight), not turn-by-turn roads.
           </div>
         </div>
       ) : selectedTeam && !selectedGroup ? (
-        <div className="spectator-empty">
-          <p>This Team has not yet been associated with a route.</p>
-        </div>
+        <div className="spectator-empty"><p>This Team has not yet been associated with a route.</p></div>
       ) : selectedGroup ? (
-        <div className="spectator-empty">
-          <p>No events configured for this group yet.</p>
-        </div>
+        <div className="spectator-empty"><p>No events configured for this group yet.</p></div>
       ) : (
-        <div className="spectator-prompt">
-          <div className="spectator-prompt__icon">👆</div>
-          <p>Select your school and team above to see<br />your event rotation.</p>
-        </div>
+        <div className="spectator-prompt"><div className="spectator-prompt__icon">👆</div><p>Select your school and team above to see<br/>your event rotation.</p></div>
       )}
     </section>
   )
