@@ -53,3 +53,13 @@ export function sortCompetitionsByDate(competitions: Competition[]): Competition
   })
 }
 
+/** Fisher–Yates shuffle for generating distinct group orders. */
+export function shuffleIds(ids: string[]): string[] {
+  const next = [...ids]
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[next[i], next[j]] = [next[j], next[i]]
+  }
+  return next
+}
+
