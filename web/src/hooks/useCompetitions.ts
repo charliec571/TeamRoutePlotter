@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { Competition, Group, PointOfInterest } from '../types'
-import { loadCompetitions, saveCompetitions, shuffleIds } from '../utils/storage'
+import { loadCompetitions, saveCompetitions, shuffleIds, sortCompetitionsByDate } from '../utils/storage'
 import { supabase } from '../lib/supabase'
 
 // ─── Supabase sync helpers ────────────────────────────────────────────────────
 
 async function dbLoadCompetitions(): Promise<Competition[]> {
-  if (!supabase) return loadCompetitions()
+  if (!supabase) return sortCompetitionsByDate(loadCompetitions())
 
   const { data: comps, error: ce } = await supabase
     .from('competitions')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('date', { ascending: true, nullsFirst: false })
 
-  if (ce || !comps) return loadCompetitions()
+  if (ce || !comps) return sortCompetitionsByDate(loadCompetitions())
 
 
   const { data: allPoints } = await supabase.from('points').select('*').order('display_order')
@@ -23,7 +23,7 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
   const { data: allTeams } = await supabase.from('teams').select('*')
 
 
-  return comps.map((comp) => ({
+  const loaded = comps.map((comp) => ({
     id: comp.id,
     name: comp.name,
     location: comp.location ?? '',
@@ -60,6 +60,8 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
       })),
 
   }))
+
+  return sortCompetitionsByDate(loaded)
 }
 
 async function dbCreateCompetition(comp: Competition): Promise<void> {
@@ -148,7 +150,7 @@ async function dbDeleteTeam(teamId: string): Promise<void> {
 
 
 export function useCompetitions() {
-  const [competitions, setCompetitions] = useState<Competition[]>(() => loadCompetitions())
+  const [competitions, setCompetitions] = useState<Competition[]>(() => sortCompetitionsByDate(loadCompetitions()))
   const [loading, setLoading] = useState(true)
   const initialized = useRef(false)
 
@@ -181,7 +183,7 @@ export function useCompetitions() {
       schools: [],
       createdAt: Date.now(),
     }
-    setCompetitions((current) => [competition, ...current])
+    setCompetitions((current) => sortCompetitionsByDate([competition, ...current]))
     dbCreateCompetition(competition)
     return competition.id
   }, [])

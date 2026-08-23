@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { AdminLoginModal } from './AdminLoginModal'
 import { supabase } from '../lib/supabase'
-import { loadCompetitions } from '../utils/storage'
+import { loadCompetitions, sortCompetitionsByDate } from '../utils/storage'
 import type { Competition } from '../types'
 
 /**
@@ -25,22 +25,22 @@ export function SpectatorHome() {
           const { data } = await supabase
             .from('competitions')
             .select('id, name, location, date, created_at')
-            .order('created_at', { ascending: false })
+            .order('date', { ascending: true, nullsFirst: false })
 
-          setCompetitions(
-            (data ?? []).map((c) => ({
-              id: c.id,
-              name: c.name,
-              location: c.location ?? '',
-              date: c.date ?? '',
-              createdAt: new Date(c.created_at.replace(' ', 'T')).getTime(),
-              points: [],
-              groups: [],
-              schools: [],
-            })),
-          )
+          const mapped = (data ?? []).map((c) => ({
+            id: c.id,
+            name: c.name,
+            location: c.location ?? '',
+            date: c.date ?? '',
+            createdAt: new Date(c.created_at.replace(' ', 'T')).getTime(),
+            points: [],
+            groups: [],
+            schools: [],
+          }))
+
+          setCompetitions(sortCompetitionsByDate(mapped))
         } else {
-          setCompetitions(loadCompetitions())
+          setCompetitions(sortCompetitionsByDate(loadCompetitions()))
         }
       } catch {
         // Gracefully fall back to empty list
