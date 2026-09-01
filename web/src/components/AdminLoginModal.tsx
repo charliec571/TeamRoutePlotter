@@ -43,7 +43,7 @@ export function AdminLoginModal({ onLogin, onClose }: AdminLoginModalProps) {
       <div className="dialog qr-dialog" style={{ padding: '2rem' }}>
         <div className="qr-dialog__header" style={{ justifyContent: 'center', marginBottom: '1rem' }}>
           <img
-            src="/splash.jpg"
+            src={`${import.meta.env.BASE_URL}splash.jpg`}
             alt="Logo"
             style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '12px' }}
           />
