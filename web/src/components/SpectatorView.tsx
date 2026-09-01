@@ -80,7 +80,7 @@ export function SpectatorView() {
         <AdminLoginModal
           onLogin={(pin) => {
             const success = login(pin)
-            if (success) navigate('/')
+            if (success) navigate('/admin')
             return success
           }}
           onClose={() => setShowAdminLogin(false)}
