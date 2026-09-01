@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { AdminLoginModal } from './AdminLoginModal'
 import { supabase } from '../lib/supabase'
-import { loadCompetitions, sortCompetitionsByDate } from '../utils/storage'
+import { loadCompetitions, sortCompetitionsByDate, filterActiveCompetitions } from '../utils/storage'
 import type { Competition } from '../types'
 
 /**
@@ -38,9 +38,11 @@ export function SpectatorHome() {
             schools: [],
           }))
 
-          setCompetitions(sortCompetitionsByDate(mapped))
+          const active = filterActiveCompetitions(mapped)
+          setCompetitions(sortCompetitionsByDate(active))
         } else {
-          setCompetitions(sortCompetitionsByDate(loadCompetitions()))
+          const active = filterActiveCompetitions(loadCompetitions())
+          setCompetitions(sortCompetitionsByDate(active))
         }
       } catch {
         // Gracefully fall back to empty list

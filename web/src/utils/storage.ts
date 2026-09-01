@@ -63,3 +63,30 @@ export function shuffleIds(ids: string[]): string[] {
   return next
 }
 
+/** Returns true if a date string is strictly before today (yesterday or earlier). */
+export function isDateInPast(dateStr?: string): boolean {
+  if (!dateStr || !dateStr.trim()) return false
+
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const todayStr = `${year}-${month}-${day}`
+
+  // Standard YYYY-MM-DD comparison
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+    return dateStr.trim() < todayStr
+  }
+
+  const meetDate = new Date(dateStr)
+  if (isNaN(meetDate.getTime())) return false
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+  return meetDate < startOfToday
+}
+
+/** Filters out competitions whose meet date has already passed. */
+export function filterActiveCompetitions(competitions: Competition[]): Competition[] {
+  return competitions.filter((comp) => !isDateInPast(comp.date))
+}
+
+

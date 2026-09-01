@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { Competition } from '../types'
 import { QRModal } from './QRModal'
+import { isDateInPast } from '../utils/storage'
 
 interface HomeScreenProps {
   competitions: Competition[]
@@ -15,6 +16,18 @@ export function HomeScreen({ competitions, onCreate, onOpen, onDelete }: HomeScr
   const [date, setDate] = useState('')
   const [creating, setCreating] = useState(false)
   const [activeQR, setActiveQR] = useState<Competition | null>(null)
+
+  const pastCompetitions = competitions.filter((c) => isDateInPast(c.date))
+
+  const handleDeletePastMeets = () => {
+    if (
+      window.confirm(
+        `Are you sure you want to permanently delete all ${pastCompetitions.length} past meet(s)?`,
+      )
+    ) {
+      pastCompetitions.forEach((c) => onDelete(c.id))
+    }
+  }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -98,9 +111,21 @@ export function HomeScreen({ competitions, onCreate, onOpen, onDelete }: HomeScr
           </div>
         </form>
       ) : (
-        <button type="button" className="btn btn--primary btn--block" onClick={() => setCreating(true)}>
-          New competition
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <button type="button" className="btn btn--primary btn--block" onClick={() => setCreating(true)}>
+            New competition
+          </button>
+          {pastCompetitions.length > 0 && (
+            <button
+              type="button"
+              className="btn btn--secondary btn--block"
+              style={{ color: '#dc2626', borderColor: 'rgba(220, 38, 38, 0.25)', fontSize: '0.85rem' }}
+              onClick={handleDeletePastMeets}
+            >
+              🗑 Delete {pastCompetitions.length} past meet{pastCompetitions.length === 1 ? '' : 's'}
+            </button>
+          )}
+        </div>
       )}
 
       {competitions.length === 0 ? (
@@ -109,23 +134,36 @@ export function HomeScreen({ competitions, onCreate, onOpen, onDelete }: HomeScr
         </div>
       ) : (
         <ul className="card-list">
-          {competitions.map((competition) => (
-            <li key={competition.id} className="card-row">
-              <button
-                type="button"
-                className="card-row__main"
-                onClick={() => onOpen(competition.id)}
+          {competitions.map((competition) => {
+            const isPast = isDateInPast(competition.date)
+            return (
+              <li
+                key={competition.id}
+                className="card-row"
+                style={isPast ? { opacity: 0.65 } : undefined}
               >
-                <strong>{competition.name}</strong>
-                <span>
-                  {competition.date ? `${competition.date} · ` : ''}
-                  {competition.points.length}{' '}
-                  {competition.points.length === 1 ? 'point' : 'points'} ·{' '}
-                  {competition.groups.length}{' '}
-                  {competition.groups.length === 1 ? 'group' : 'groups'}
-                </span>
-              </button>
-              <div style={{ display: 'flex', gap: '0.25rem', paddingRight: '0.35rem' }}>
+                <button
+                  type="button"
+                  className="card-row__main"
+                  onClick={() => onOpen(competition.id)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <strong>{competition.name}</strong>
+                    {isPast && (
+                      <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', borderRadius: '4px', background: 'rgba(220, 38, 38, 0.15)', color: '#dc2626', fontWeight: 600 }}>
+                        PAST
+                      </span>
+                    )}
+                  </div>
+                  <span>
+                    {competition.date ? `${competition.date} · ` : ''}
+                    {competition.points.length}{' '}
+                    {competition.points.length === 1 ? 'point' : 'points'} ·{' '}
+                    {competition.groups.length}{' '}
+                    {competition.groups.length === 1 ? 'group' : 'groups'}
+                  </span>
+                </button>
+                <div style={{ display: 'flex', gap: '0.25rem', paddingRight: '0.35rem' }}>
                 <button
                   type="button"
                   className="btn btn--ghost btn--icon card-row__qr"
@@ -161,8 +199,9 @@ export function HomeScreen({ competitions, onCreate, onOpen, onDelete }: HomeScr
                 </button>
               </div>
             </li>
-          ))}
-        </ul>
+          )
+        })}
+      </ul>
       )}
     </section>
   )
