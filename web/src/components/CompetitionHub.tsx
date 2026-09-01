@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import type { Competition } from '../types'
+import type { Competition, PointOfInterest } from '../types'
 import { QRModal } from './QRModal'
+import { EditPointDialog } from './EditPointDialog'
 
 interface CompetitionHubProps {
   competition: Competition
@@ -11,6 +12,8 @@ interface CompetitionHubProps {
   onOpenGroup: (groupId: string) => void
   onAddGroup: (name: string) => void
   onDeleteGroup: (groupId: string) => void
+  onAddPoint: (point: { name: string; latitude: number; longitude: number }) => void
+  onUpdatePoint: (pointId: string, updates: { name: string; latitude: number; longitude: number }) => void
   onRemovePoint: (pointId: string) => void
   onAddSchool: (name: string) => void
   onDeleteSchool: (schoolId: string) => void
@@ -28,6 +31,8 @@ export function CompetitionHub({
   onOpenGroup,
   onAddGroup,
   onDeleteGroup,
+  onAddPoint,
+  onUpdatePoint,
   onRemovePoint,
   onAddSchool,
   onDeleteSchool,
@@ -42,6 +47,11 @@ export function CompetitionHub({
   const [addingTeamToSchool, setAddingTeamToSchool] = useState<string | null>(null)
   const [teamName, setTeamName] = useState('')
   const [showQR, setShowQR] = useState(false)
+  const [editingPoint, setEditingPoint] = useState<PointOfInterest | null>(null)
+  const [addingPoint, setAddingPoint] = useState(false)
+  const [newPointName, setNewPointName] = useState('')
+  const [newPointLat, setNewPointLat] = useState('')
+  const [newPointLng, setNewPointLng] = useState('')
 
   const handleAddGroup = (event: FormEvent) => {
     event.preventDefault()
@@ -50,6 +60,25 @@ export function CompetitionHub({
     onAddGroup(trimmed)
     setGroupName('')
     setAddingGroup(false)
+  }
+
+  const handleAddPointSubmit = (event: FormEvent) => {
+    event.preventDefault()
+    const trimmed = newPointName.trim()
+    if (!trimmed) return
+
+    const lat = parseFloat(newPointLat) || (competition.points[0]?.latitude ?? 37.7749)
+    const lng = parseFloat(newPointLng) || (competition.points[0]?.longitude ?? -122.4194)
+
+    onAddPoint({
+      name: trimmed,
+      latitude: lat,
+      longitude: lng,
+    })
+    setNewPointName('')
+    setNewPointLat('')
+    setNewPointLng('')
+    setAddingPoint(false)
   }
 
   return (
@@ -61,6 +90,20 @@ export function CompetitionHub({
           onClose={() => setShowQR(false)}
         />
       )}
+
+      <EditPointDialog
+        point={editingPoint}
+        open={editingPoint !== null}
+        onSave={(pointId, updates) => {
+          onUpdatePoint(pointId, updates)
+          setEditingPoint(null)
+        }}
+        onDelete={(pointId) => {
+          onRemovePoint(pointId)
+          setEditingPoint(null)
+        }}
+        onCancel={() => setEditingPoint(null)}
+      />
 
       <header className="route-screen__header">
         <button type="button" className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Back">
@@ -126,33 +169,120 @@ export function CompetitionHub({
             Shared areas of interest for every group. Map them once, then reorder per group.
           </p>
 
-          <button type="button" className="btn btn--primary btn--block" onClick={onOpenMap}>
-            {competition.points.length === 0 ? 'Map points' : 'Edit points on map'}
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <button type="button" className="btn btn--primary" onClick={onOpenMap}>
+              {competition.points.length === 0 ? 'Map points' : 'Edit on map'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => setAddingPoint(true)}
+            >
+              + Add point
+            </button>
+          </div>
+
+          {addingPoint && (
+            <form className="create-form" onSubmit={handleAddPointSubmit} style={{ marginBottom: '1rem' }}>
+              <label className="field-label" htmlFor="new-point-name">
+                Point name
+              </label>
+              <input
+                id="new-point-name"
+                className="field"
+                type="text"
+                placeholder="e.g. Pull-up Bars"
+                value={newPointName}
+                onChange={(e) => setNewPointName(e.target.value)}
+                autoFocus
+                required
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <div>
+                  <label className="field-label" htmlFor="new-point-lat">
+                    Latitude (optional)
+                  </label>
+                  <input
+                    id="new-point-lat"
+                    type="number"
+                    step="any"
+                    className="field"
+                    placeholder={competition.points[0]?.latitude.toFixed(4) ?? '37.7749'}
+                    value={newPointLat}
+                    onChange={(e) => setNewPointLat(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="new-point-lng">
+                    Longitude (optional)
+                  </label>
+                  <input
+                    id="new-point-lng"
+                    type="number"
+                    step="any"
+                    className="field"
+                    placeholder={competition.points[0]?.longitude.toFixed(4) ?? '-122.4194'}
+                    value={newPointLng}
+                    onChange={(e) => setNewPointLng(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="dialog__actions">
+                <button type="button" className="btn btn--ghost" onClick={() => setAddingPoint(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn--primary" disabled={!newPointName.trim()}>
+                  Add point
+                </button>
+              </div>
+            </form>
+          )}
 
           {competition.points.length === 0 ? (
             <div className="empty-state">
-              <p>No points yet. Open the map and long-press to add stops.</p>
+              <p>No points yet. Open the map and long-press or tap "+ Add point" to add stops.</p>
             </div>
           ) : (
             <ul className="point-list point-list--static">
               {competition.points.map((point, index) => (
                 <li key={point.id} className="point-item point-item--static">
                   <span className="point-item__index">{index + 1}</span>
-                  <div className="point-item__body">
+                  <div
+                    className="point-item__body"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setEditingPoint(point)}
+                    title="Click to edit"
+                  >
                     <strong>{point.name}</strong>
                     <span>
                       {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--icon"
-                    aria-label={`Remove ${point.name}`}
-                    onClick={() => onRemovePoint(point.id)}
-                  >
-                    ×
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--icon"
+                      aria-label={`Edit ${point.name}`}
+                      title={`Edit ${point.name}`}
+                      style={{ fontSize: '0.85rem' }}
+                      onClick={() => setEditingPoint(point)}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--icon"
+                      aria-label={`Remove ${point.name}`}
+                      title={`Remove ${point.name}`}
+                      onClick={() => {
+                        if (window.confirm(`Delete point "${point.name}"?`)) {
+                          onRemovePoint(point.id)
+                        }
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

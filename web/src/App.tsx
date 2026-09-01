@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AddPointDialog } from './components/AddPointDialog'
+import { EditPointDialog } from './components/EditPointDialog'
 import { CompetitionHub } from './components/CompetitionHub'
 import { GroupRoute } from './components/GroupRoute'
 import { HomeScreen } from './components/HomeScreen'
@@ -8,7 +9,7 @@ import { MapView, type MapBasemap, type MapFlyTarget } from './components/MapVie
 import { PlaceSearch } from './components/PlaceSearch'
 import { useCompetitions } from './hooks/useCompetitions'
 import { useAuth } from './hooks/useAuth'
-import type { Screen } from './types'
+import type { PointOfInterest, Screen } from './types'
 import { resolveRoute } from './utils/storage'
 import './App.css'
 
@@ -23,6 +24,7 @@ export default function App() {
     createCompetition,
     deleteCompetition,
     addPoint,
+    updatePoint,
     removePoint,
     addGroup,
     deleteGroup,
@@ -42,6 +44,7 @@ export default function App() {
 
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [pending, setPending] = useState<PendingPoint | null>(null)
+  const [editingPointOnMap, setEditingPointOnMap] = useState<PointOfInterest | null>(null)
   const [flyTo, setFlyTo] = useState<MapFlyTarget | null>(null)
   const [basemap, setBasemap] = useState<MapBasemap>('satellite')
 
@@ -123,6 +126,8 @@ export default function App() {
           }
           onAddGroup={(name) => addGroup(competition.id, name, true)}
           onDeleteGroup={(groupId) => deleteGroup(competition.id, groupId)}
+          onAddPoint={(point) => addPoint(competition.id, point)}
+          onUpdatePoint={(pointId, updates) => updatePoint(competition.id, pointId, updates)}
           onRemovePoint={(pointId) => removePoint(competition.id, pointId)}
           onAddSchool={(name) => addSchool(competition.id, name)}
           onDeleteSchool={(schoolId) => deleteSchool(competition.id, schoolId)}
@@ -152,6 +157,8 @@ export default function App() {
             }
             onAddGroup={(name) => addGroup(competition.id, name, true)}
             onDeleteGroup={(groupId) => deleteGroup(competition.id, groupId)}
+            onAddPoint={(point) => addPoint(competition.id, point)}
+            onUpdatePoint={(pointId, updates) => updatePoint(competition.id, pointId, updates)}
             onRemovePoint={(pointId) => removePoint(competition.id, pointId)}
             onAddSchool={(name) => addSchool(competition.id, name)}
             onDeleteSchool={(schoolId) => deleteSchool(competition.id, schoolId)}
@@ -232,13 +239,17 @@ export default function App() {
             </button>
           </div>
         </div>
-        <p className="map-chrome__hint">Long-press to add a shared stop for all groups</p>
+        <p className="map-chrome__hint">Long-press to add · Tap or drag a point to edit</p>
       </header>
 
       <div className="map-shell">
         <MapView
           points={competition.points}
           onLongPress={handleLongPress}
+          onSelectPoint={(point) => setEditingPointOnMap(point)}
+          onPointMoved={(pointId, lat, lng) =>
+            updatePoint(competition.id, pointId, { latitude: lat, longitude: lng })
+          }
           flyTo={flyTo}
           basemap={basemap}
         />
@@ -276,6 +287,20 @@ export default function App() {
           setPending(null)
         }}
         onCancel={() => setPending(null)}
+      />
+
+      <EditPointDialog
+        point={editingPointOnMap}
+        open={editingPointOnMap !== null}
+        onSave={(pointId, updates) => {
+          updatePoint(competition.id, pointId, updates)
+          setEditingPointOnMap(null)
+        }}
+        onDelete={(pointId) => {
+          removePoint(competition.id, pointId)
+          setEditingPointOnMap(null)
+        }}
+        onCancel={() => setEditingPointOnMap(null)}
       />
     </div>
   )

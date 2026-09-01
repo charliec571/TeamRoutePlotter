@@ -330,6 +330,16 @@
   background: rgba(18, 32, 27, 0.06);
 }
 
+.btn--danger {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
 .btn--block {
   width: 100%;
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CircleMarker, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import type { PointOfInterest } from '../types'
 import { DEV_FIXED_LOCATION } from '../utils/geo'
@@ -178,6 +178,8 @@ const BASEMAPS = {
 interface MapViewProps {
   points: PointOfInterest[]
   onLongPress: (lat: number, lng: number) => void
+  onSelectPoint?: (point: PointOfInterest) => void
+  onPointMoved?: (pointId: string, latitude: number, longitude: number) => void
   flyTo?: MapFlyTarget | null
   basemap?: MapBasemap
 }
@@ -185,6 +187,8 @@ interface MapViewProps {
 export function MapView({
   points,
   onLongPress,
+  onSelectPoint,
+  onPointMoved,
   flyTo = null,
   basemap = 'street',
 }: MapViewProps) {
@@ -225,7 +229,20 @@ export function MapView({
           position={[point.latitude, point.longitude]}
           icon={markerIcon}
           title={point.name}
-        />
+          draggable={Boolean(onPointMoved)}
+          eventHandlers={{
+            click: () => onSelectPoint?.(point),
+            dragend: (e) => {
+              const marker = e.target
+              const latLng = marker.getLatLng()
+              onPointMoved?.(point.id, latLng.lat, latLng.lng)
+            },
+          }}
+        >
+          <Tooltip direction="top" offset={[0, -32]} opacity={0.92}>
+            <span>{point.name}</span>
+          </Tooltip>
+        </Marker>
       ))}
     </MapContainer>
   )

@@ -248,6 +248,37 @@ export function useCompetitions() {
     [updateCompetition],
   )
 
+  const updatePoint = useCallback(
+    (
+      competitionId: string,
+      pointId: string,
+      updates: { name?: string; latitude?: number; longitude?: number },
+    ) => {
+      updateCompetition(competitionId, (competition) => {
+        const index = competition.points.findIndex((p) => p.id === pointId)
+        if (index === -1) return competition
+
+        const existing = competition.points[index]
+        const updatedPoint: PointOfInterest = {
+          ...existing,
+          name: updates.name !== undefined ? updates.name.trim() : existing.name,
+          latitude: updates.latitude !== undefined ? updates.latitude : existing.latitude,
+          longitude: updates.longitude !== undefined ? updates.longitude : existing.longitude,
+        }
+
+        const updatedPoints = [...competition.points]
+        updatedPoints[index] = updatedPoint
+
+        dbUpsertPoint(competitionId, updatedPoint, index)
+        return {
+          ...competition,
+          points: updatedPoints,
+        }
+      })
+    },
+    [updateCompetition],
+  )
+
   const addGroup = useCallback(
     (competitionId: string, name: string, shuffle = true) => {
       let createdId = ''
@@ -458,6 +489,7 @@ export function useCompetitions() {
     createCompetition,
     deleteCompetition,
     addPoint,
+    updatePoint,
     removePoint,
     addGroup,
     deleteGroup,
