@@ -565,18 +565,26 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: grid;
-  place-items: end center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   padding: 1rem;
   padding-bottom: calc(1rem + var(--safe-bottom));
   background: rgba(8, 14, 12, 0.55);
   animation: fade-in 0.18s ease;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .dialog {
-  width: min(100%, 26rem);
+  width: 100%;
+  max-width: 26rem;
+  min-width: 0;
+  box-sizing: border-box;
   max-height: calc(100dvh - 2rem - var(--safe-bottom) - var(--safe-top));
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   padding: 1.25rem;
@@ -812,7 +820,7 @@
   }
 
   .dialog-backdrop {
-    place-items: center;
+    justify-content: center;
   }
 
   .dialog {
@@ -1190,12 +1198,16 @@
   display: grid;
   gap: 0.75rem;
   text-align: center;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .qr-dialog__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .qr-dialog__title {
@@ -1203,6 +1215,7 @@
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.25;
+  word-break: break-word;
 }
 
 .qr-dialog__code {
@@ -1212,6 +1225,8 @@
   padding: 0.85rem;
   border-radius: 16px;
   background: #f7faf8;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .qr-dialog__instructions {
@@ -1230,10 +1245,14 @@
   border-radius: 12px;
   background: var(--bg-soft);
   text-align: left;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .qr-dialog__url-text {
-  flex: 1;
+  flex: 1 1 0%;
+  min-width: 0;
   overflow: hidden;
   font-size: 0.75rem;
   color: var(--ink-muted);
