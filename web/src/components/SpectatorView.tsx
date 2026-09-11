@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { AdminLoginModal } from './AdminLoginModal'
 import { usePublicCompetition } from '../hooks/usePublicCompetition'
+import { useTeamPresence } from '../hooks/useTeamPresence'
 import { NavigateView } from './NavigateView'
 import type { PointOfInterest } from '../types'
 
@@ -14,6 +15,70 @@ export function SpectatorView() {
   const { competition, loading, error } = usePublicCompetition(competitionId ?? '')
   const [navigatePoint, setNavigatePoint] = useState<PointOfInterest | null>(null)
 
+  // School and Team selection (persisted to localStorage per competition)
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(() => {
+    if (!competitionId) return ''
+    try {
+      return localStorage.getItem(`raider_school_${competitionId}`) || ''
+    } catch {
+      return ''
+    }
+  })
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(() => {
+    if (!competitionId) return ''
+    try {
+      return localStorage.getItem(`raider_team_${competitionId}`) || ''
+    } catch {
+      return ''
+    }
+  })
+
+  // Auto-select if there's only 1 school or team and none selected yet
+  useEffect(() => {
+    if (!competition || !competition.schools.length) return
+    if (!selectedSchoolId && competition.schools.length === 1) {
+      const soleSchool = competition.schools[0]
+      setSelectedSchoolId(soleSchool.id)
+      if (soleSchool.teams.length === 1 && !selectedTeamId) {
+        setSelectedTeamId(soleSchool.teams[0].id)
+      }
+    }
+  }, [competition, selectedSchoolId, selectedTeamId])
+
+  const currentSchool = useMemo(
+    () => competition?.schools.find((s) => s.id === selectedSchoolId),
+    [competition, selectedSchoolId],
+  )
+
+  const availableTeams = useMemo(
+    () => currentSchool?.teams ?? [],
+    [currentSchool],
+  )
+
+  const handleSchoolChange = (schoolId: string) => {
+    setSelectedSchoolId(schoolId)
+    setSelectedTeamId('')
+    if (competitionId) {
+      try {
+        localStorage.setItem(`raider_school_${competitionId}`, schoolId)
+        localStorage.removeItem(`raider_team_${competitionId}`)
+      } catch {
+        // Ignore
+      }
+    }
+  }
+
+  const handleTeamChange = (teamId: string) => {
+    setSelectedTeamId(teamId)
+    if (competitionId) {
+      try {
+        localStorage.setItem(`raider_team_${competitionId}`, teamId)
+      } catch {
+        // Ignore
+      }
+    }
+  }
+
   // Separate points into Events and Points of Interest (POI)
   const events = useMemo(
     () => competition?.points.filter((p) => p.type !== 'poi') ?? [],
@@ -22,6 +87,13 @@ export function SpectatorView() {
   const pois = useMemo(
     () => competition?.points.filter((p) => p.type === 'poi') ?? [],
     [competition],
+  )
+
+  // Real-time crowdsourced team GPS presence
+  const { activeUsersCount, gpsActive, eventStatusMap } = useTeamPresence(
+    competitionId ?? '',
+    selectedTeamId || null,
+    events,
   )
 
   const [activeTab, setActiveTab] = useState<'events' | 'poi'>('events')
@@ -149,6 +221,59 @@ export function SpectatorView() {
         )}
       </header>
 
+      {/* School and Team Selection Bar */}
+      {competition.schools && competition.schools.length > 0 && (
+        <div className="spectator-team-bar">
+          <div className="spectator-team-selectors">
+            <div className="spectator-select-group">
+              <label htmlFor="school-select" className="spectator-select-label">School</label>
+              <select
+                id="school-select"
+                className="spectator-team-select"
+                value={selectedSchoolId}
+                onChange={(e) => handleSchoolChange(e.target.value)}
+              >
+                <option value="">Select School...</option>
+                {competition.schools.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {selectedSchoolId && (
+              <div className="spectator-select-group">
+                <label htmlFor="team-select" className="spectator-select-label">Team</label>
+                <select
+                  id="team-select"
+                  className="spectator-team-select"
+                  value={selectedTeamId}
+                  onChange={(e) => handleTeamChange(e.target.value)}
+                >
+                  <option value="">Select Team...</option>
+                  {availableTeams.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {selectedTeamId && (
+            <div className="spectator-presence-status">
+              <span className="spectator-presence-pill">
+                <span className={`presence-dot ${gpsActive ? 'presence-dot--live' : 'presence-dot--waiting'}`} />
+                {activeUsersCount > 0
+                  ? `${activeUsersCount} team follower${activeUsersCount === 1 ? '' : 's'} online`
+                  : 'Connecting to team radar...'}
+              </span>
+              {!gpsActive && (
+                <span className="spectator-presence-hint">Enable location to share radar</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Events vs Points of Interest (POI) Toggle */}
       <div className="spectator-tab-toggle" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <button
@@ -216,11 +341,14 @@ export function SpectatorView() {
             {currentList.map((point, index) => {
               const isPOI = point.type === 'poi'
               const isCompleted = !isPOI && completedIds.includes(point.id)
+              const presence = !isPOI ? eventStatusMap[point.id] : undefined
+              const heatLevel = presence?.heatLevel ?? 'none'
+              const count = presence?.count ?? 0
 
               return (
                 <li key={point.id} className="spectator-point-item">
                   <div
-                    className={`spectator-point-btn${isCompleted ? ' is-completed' : ''}`}
+                    className={`spectator-point-btn${isCompleted ? ' is-completed' : ''}${heatLevel !== 'none' ? ` is-active-${heatLevel}` : ''}`}
                     onClick={() => setNavigatePoint(point)}
                     style={{ cursor: 'pointer' }}
                   >
@@ -247,7 +375,7 @@ export function SpectatorView() {
                     ) : (
                       <button
                         type="button"
-                        className={`spectator-check-btn${isCompleted ? ' is-checked' : ''}`}
+                        className={`spectator-check-btn${isCompleted ? ' is-checked' : ''}${heatLevel !== 'none' ? ' is-radar-hot' : ''}`}
                         onClick={(e) => toggleEventCompleted(point.id, e)}
                         aria-label={isCompleted ? `Mark ${point.name} incomplete` : `Mark ${point.name} completed`}
                         title={isCompleted ? 'Completed (tap to uncheck)' : 'Mark as completed'}
@@ -257,14 +385,33 @@ export function SpectatorView() {
                     )}
 
                     <div className="spectator-point-body">
-                      <strong style={isCompleted ? { textDecoration: 'line-through', opacity: 0.7 } : undefined}>
-                        {point.name}
-                      </strong>
+                      <div className="spectator-point-heading-line">
+                        <strong style={isCompleted ? { textDecoration: 'line-through', opacity: 0.7 } : undefined}>
+                          {point.name}
+                        </strong>
+                        {heatLevel === 'high' && (
+                          <span className="crowd-badge crowd-badge--high" title={`${count} team members nearby`}>
+                            🔥 Main Crowd ({count})
+                          </span>
+                        )}
+                        {heatLevel === 'med' && (
+                          <span className="crowd-badge crowd-badge--med" title={`${count} team members nearby`}>
+                            🟢 Active Event ({count})
+                          </span>
+                        )}
+                        {heatLevel === 'low' && (
+                          <span className="crowd-badge crowd-badge--low" title={`${count} team members nearby`}>
+                            🟢 Team Spotted ({count})
+                          </span>
+                        )}
+                      </div>
                       <span>
                         {isPOI
                           ? 'Tap for line-of-sight navigation →'
                           : isCompleted
                           ? 'Completed · Tap for directions'
+                          : heatLevel !== 'none'
+                          ? 'Team detected here now · Tap for directions'
                           : 'Tap for line-of-sight navigation →'}
                       </span>
                     </div>

@@ -45,3 +45,18 @@ export type Screen =
   | { name: 'competition'; competitionId: string; tab: 'points' | 'groups' | 'schools' }
   | { name: 'map'; competitionId: string }
   | { name: 'group-route'; competitionId: string; groupId: string }
+
+export interface TeamPresenceUser {
+  userId: string
+  latitude: number
+  longitude: number
+  timestamp: number
+}
+
+export type PresenceHeatLevel = 'none' | 'low' | 'med' | 'high'
+
+export interface EventPresenceStatus {
+  count: number
+  heatLevel: PresenceHeatLevel
+  heatScore: number
+}
