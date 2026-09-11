@@ -12,16 +12,20 @@ CREATE TABLE IF NOT EXISTS competitions (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Points of Interest (event pin locations)
+-- 2. Points of Interest (event pin locations & POIs)
 CREATE TABLE IF NOT EXISTS points (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
   name           TEXT NOT NULL,
   latitude       DOUBLE PRECISION NOT NULL,
   longitude      DOUBLE PRECISION NOT NULL,
-  display_order  INTEGER NOT NULL DEFAULT 0
+  display_order  INTEGER NOT NULL DEFAULT 0,
+  type           TEXT NOT NULL DEFAULT 'event' -- 'event' or 'poi'
 );
 CREATE INDEX IF NOT EXISTS idx_points_competition_id ON points(competition_id);
+
+-- Migration if upgrading existing table:
+-- ALTER TABLE points ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'event';
 
 -- 3. Groups (teams with a route order)
 CREATE TABLE IF NOT EXISTS groups (

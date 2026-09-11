@@ -60,7 +60,8 @@ export function QRModal({ competitionId, competitionName, onClose }: QRModalProp
         <div className="qr-dialog__code">
           <QRCodeSVG
             value={url}
-            size={220}
+            size={180}
+            style={{ width: '100%', maxWidth: '200px', height: 'auto', aspectRatio: '1/1' }}
             bgColor="transparent"
             fgColor="#12201b"
             level="M"
