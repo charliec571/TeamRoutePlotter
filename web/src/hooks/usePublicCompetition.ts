@@ -61,6 +61,7 @@ export function usePublicCompetition(competitionId: string) {
               name: p.name,
               latitude: p.latitude,
               longitude: p.longitude,
+              type: (p.type as 'event' | 'poi') || 'event',
             })),
             groups: (groups ?? []).map((g) => ({
               id: g.id,

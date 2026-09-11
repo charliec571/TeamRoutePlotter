@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import type { Competition, PointOfInterest } from '../types'
+import type { Competition, PointOfInterest, PointType } from '../types'
 import { QRModal } from './QRModal'
 import { EditPointDialog } from './EditPointDialog'
 
@@ -12,8 +12,8 @@ interface CompetitionHubProps {
   onOpenGroup: (groupId: string) => void
   onAddGroup: (name: string) => void
   onDeleteGroup: (groupId: string) => void
-  onAddPoint: (point: { name: string; latitude: number; longitude: number }) => void
-  onUpdatePoint: (pointId: string, updates: { name: string; latitude: number; longitude: number }) => void
+  onAddPoint: (point: { name: string; latitude: number; longitude: number; type?: PointType }) => void
+  onUpdatePoint: (pointId: string, updates: { name: string; latitude: number; longitude: number; type?: PointType }) => void
   onRemovePoint: (pointId: string) => void
   onAddSchool: (name: string) => void
   onDeleteSchool: (schoolId: string) => void
@@ -49,6 +49,7 @@ export function CompetitionHub({
   const [showQR, setShowQR] = useState(false)
   const [editingPoint, setEditingPoint] = useState<PointOfInterest | null>(null)
   const [addingPoint, setAddingPoint] = useState(false)
+  const [newPointType, setNewPointType] = useState<'event' | 'poi'>('event')
   const [newPointName, setNewPointName] = useState('')
   const [newPointLat, setNewPointLat] = useState('')
   const [newPointLng, setNewPointLng] = useState('')
@@ -74,10 +75,12 @@ export function CompetitionHub({
       name: trimmed,
       latitude: lat,
       longitude: lng,
+      type: newPointType,
     })
     setNewPointName('')
     setNewPointLat('')
     setNewPointLng('')
+    setNewPointType('event')
     setAddingPoint(false)
   }
 
@@ -184,14 +187,54 @@ export function CompetitionHub({
 
           {addingPoint && (
             <form className="create-form" onSubmit={handleAddPointSubmit} style={{ marginBottom: '1rem' }}>
+              <label className="field-label" style={{ display: 'block', marginBottom: '0.35rem' }}>
+                Location Type
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setNewPointType('event')}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    border: newPointType === 'event' ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.12)',
+                    background: newPointType === 'event' ? 'rgba(232, 137, 58, 0.15)' : 'rgba(255,255,255,0.04)',
+                    color: newPointType === 'event' ? 'var(--accent)' : 'inherit',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🏁 Event
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewPointType('poi')}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    border: newPointType === 'poi' ? '2px solid #3b82f6' : '1px solid rgba(255,255,255,0.12)',
+                    background: newPointType === 'poi' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.04)',
+                    color: newPointType === 'poi' ? '#60a5fa' : 'inherit',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  📍 Point of Interest (POI)
+                </button>
+              </div>
+
               <label className="field-label" htmlFor="new-point-name">
-                Point name
+                {newPointType === 'event' ? 'Event name' : 'POI name (e.g. Restrooms, Parking)'}
               </label>
               <input
                 id="new-point-name"
                 className="field"
                 type="text"
-                placeholder="e.g. Pull-up Bars"
+                placeholder={newPointType === 'event' ? 'e.g. Pull-up Bars' : 'e.g. Restrooms, Concessions'}
                 value={newPointName}
                 onChange={(e) => setNewPointName(e.target.value)}
                 autoFocus
@@ -232,7 +275,7 @@ export function CompetitionHub({
                   Cancel
                 </button>
                 <button type="submit" className="btn btn--primary" disabled={!newPointName.trim()}>
-                  Add point
+                  Add {newPointType === 'event' ? 'event' : 'POI'}
                 </button>
               </div>
             </form>
@@ -244,20 +287,41 @@ export function CompetitionHub({
             </div>
           ) : (
             <ul className="point-list point-list--static">
-              {competition.points.map((point, index) => (
-                <li key={point.id} className="point-item point-item--static">
-                  <span className="point-item__index">{index + 1}</span>
-                  <div
-                    className="point-item__body"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setEditingPoint(point)}
-                    title="Click to edit"
-                  >
-                    <strong>{point.name}</strong>
-                    <span>
-                      {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
+              {competition.points.map((point, index) => {
+                const isPOI = point.type === 'poi'
+                return (
+                  <li key={point.id} className="point-item point-item--static">
+                    <span
+                      className="point-item__index"
+                      style={isPOI ? { background: '#3b82f6', color: '#ffffff' } : undefined}
+                    >
+                      {index + 1}
                     </span>
-                  </div>
+                    <div
+                      className="point-item__body"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setEditingPoint(point)}
+                      title="Click to edit"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <strong>{point.name}</strong>
+                        <span
+                          style={{
+                            fontSize: '0.65rem',
+                            padding: '0.1rem 0.35rem',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            background: isPOI ? 'rgba(59, 130, 246, 0.15)' : 'rgba(232, 137, 58, 0.15)',
+                            color: isPOI ? '#60a5fa' : 'var(--accent)',
+                          }}
+                        >
+                          {isPOI ? 'POI' : 'EVENT'}
+                        </span>
+                      </div>
+                      <span>
+                        {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
+                      </span>
+                    </div>
                   <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
                     <button
                       type="button"
@@ -284,7 +348,8 @@ export function CompetitionHub({
                     </button>
                   </div>
                 </li>
-              ))}
+                )
+              })}
             </ul>
           )}
         </div>

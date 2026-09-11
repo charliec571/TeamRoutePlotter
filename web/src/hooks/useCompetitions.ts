@@ -36,6 +36,7 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
         name: p.name,
         latitude: p.latitude,
         longitude: p.longitude,
+        type: (p.type as 'event' | 'poi') || 'event',
       })),
 
     groups: (allGroups ?? [])
@@ -86,14 +87,22 @@ async function dbUpsertPoint(
   order: number,
 ): Promise<void> {
   if (!supabase) return
-  await supabase.from('points').upsert({
+  const record: Record<string, unknown> = {
     id: point.id,
     competition_id: competitionId,
     name: point.name,
     latitude: point.latitude,
     longitude: point.longitude,
     display_order: order,
-  })
+    type: point.type || 'event',
+  }
+
+  const { error } = await supabase.from('points').upsert(record)
+  if (error && error.message && error.message.includes('type')) {
+    // If the 'type' column is not yet present in Supabase table, retry without it
+    delete record.type
+    await supabase.from('points').upsert(record)
+  }
 }
 
 async function dbDeletePoint(pointId: string): Promise<void> {
@@ -209,6 +218,7 @@ export function useCompetitions() {
         name: point.name,
         latitude: point.latitude,
         longitude: point.longitude,
+        type: point.type || 'event',
       }
 
       updateCompetition(competitionId, (competition) => {
@@ -252,7 +262,7 @@ export function useCompetitions() {
     (
       competitionId: string,
       pointId: string,
-      updates: { name?: string; latitude?: number; longitude?: number },
+      updates: { name?: string; latitude?: number; longitude?: number; type?: 'event' | 'poi' },
     ) => {
       updateCompetition(competitionId, (competition) => {
         const index = competition.points.findIndex((p) => p.id === pointId)
@@ -264,6 +274,7 @@ export function useCompetitions() {
           name: updates.name !== undefined ? updates.name.trim() : existing.name,
           latitude: updates.latitude !== undefined ? updates.latitude : existing.latitude,
           longitude: updates.longitude !== undefined ? updates.longitude : existing.longitude,
+          type: updates.type !== undefined ? updates.type : (existing.type || 'event'),
         }
 
         const updatedPoints = [...competition.points]

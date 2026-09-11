@@ -5,7 +5,6 @@ import { AdminLoginModal } from './AdminLoginModal'
 import { usePublicCompetition } from '../hooks/usePublicCompetition'
 import { NavigateView } from './NavigateView'
 import type { PointOfInterest } from '../types'
-import { resolveRoute } from '../utils/storage'
 
 export function SpectatorView() {
   const { competitionId } = useParams<{ competitionId: string }>()
@@ -13,41 +12,21 @@ export function SpectatorView() {
   const { login } = useAuth()
   const [showAdminLogin, setShowAdminLogin] = useState(false)
   const { competition, loading, error } = usePublicCompetition(competitionId ?? '')
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('')
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
   const [navigatePoint, setNavigatePoint] = useState<PointOfInterest | null>(null)
 
-  const selectedSchool = useMemo(
-    () => competition?.schools.find((s) => s.id === selectedSchoolId) ?? null,
-    [competition, selectedSchoolId],
+  // Separate points into Events and Points of Interest (POI)
+  const events = useMemo(
+    () => competition?.points.filter((p) => p.type !== 'poi') ?? [],
+    [competition],
+  )
+  const pois = useMemo(
+    () => competition?.points.filter((p) => p.type === 'poi') ?? [],
+    [competition],
   )
 
-  const selectedTeam = useMemo(
-    () => selectedSchool?.teams.find((t) => t.id === selectedTeamId) ?? null,
-    [selectedSchool, selectedTeamId],
-  )
+  const [activeTab, setActiveTab] = useState<'events' | 'poi'>('events')
 
-  const selectedGroup = useMemo(
-    () => competition?.groups.find((g) => g.id === selectedTeam?.groupId) ?? null,
-    [competition, selectedTeam],
-  )
-
-  // Reset team when school changes
-  useEffect(() => {
-    setSelectedTeamId('')
-  }, [selectedSchoolId])
-
-  // Events list: shows group route if configured, or all competition events directly
-  const eventsToDisplay = useMemo(() => {
-    if (!competition) return []
-    if (selectedGroup && selectedGroup.routeOrder.length > 0) {
-      const resolved = resolveRoute(competition.points, selectedGroup.routeOrder)
-      if (resolved.length > 0) return resolved
-    }
-    return competition.points
-  }, [competition, selectedGroup])
-
-  // Private local checklist stored 100% on this parent's phone
+  // Private local checklist stored 100% on this parent's phone (only for events)
   const storageKey = competition ? `raider_done_${competition.id}` : ''
   const [completedIds, setCompletedIds] = useState<string[]>([])
 
@@ -119,6 +98,9 @@ export function SpectatorView() {
     )
   }
 
+  const currentList = activeTab === 'events' ? events : pois
+  const validCompletedCount = completedIds.filter((id) => events.some((e) => e.id === id)).length
+
   return (
     <section className="spectator-screen">
       {showAdminLogin && (
@@ -167,46 +149,58 @@ export function SpectatorView() {
         )}
       </header>
 
-      {/* Selectors (Optional School/Team filter) */}
-      {competition.schools.length > 0 && (
-        <div className="spectator-selectors-row" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <div className="spectator-selector" style={{ flex: 1 }}>
-            <label className="spectator-selector__label" htmlFor="school-select">Your School (Optional)</label>
-            <div className="spectator-selector__wrap">
-              <select id="school-select" className="spectator-select" value={selectedSchoolId} onChange={(e) => setSelectedSchoolId(e.target.value)}>
-                <option value="">— All Schools —</option>
-                {competition.schools.map((school) => (
-                  <option key={school.id} value={school.id}>{school.name}</option>
-                ))}
-              </select>
-              <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-            </div>
-          </div>
-          {selectedSchool && selectedSchool.teams.length > 0 && (
-            <div className="spectator-selector" style={{ flex: 1 }}>
-              <label className="spectator-selector__label" htmlFor="team-select">Your Team</label>
-              <div className="spectator-selector__wrap">
-                <select id="team-select" className="spectator-select" value={selectedTeamId} onChange={(e) => setSelectedTeamId(e.target.value)}>
-                  <option value="">— Choose a team —</option>
-                  {selectedSchool.teams.map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
-                <svg className="spectator-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Events vs Points of Interest (POI) Toggle */}
+      <div className="spectator-tab-toggle" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <button
+          type="button"
+          className={`spectator-tab-btn ${activeTab === 'events' ? 'is-active' : ''}`}
+          onClick={() => setActiveTab('events')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 0.5rem',
+            borderRadius: '12px',
+            border: activeTab === 'events' ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.12)',
+            background: activeTab === 'events' ? 'rgba(232, 137, 58, 0.18)' : 'rgba(255,255,255,0.04)',
+            color: activeTab === 'events' ? 'var(--accent)' : 'rgba(244,247,245,0.7)',
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          🏁 Events ({events.length})
+        </button>
+        <button
+          type="button"
+          className={`spectator-tab-btn ${activeTab === 'poi' ? 'is-active' : ''}`}
+          onClick={() => setActiveTab('poi')}
+          style={{
+            flex: 1,
+            padding: '0.75rem 0.5rem',
+            borderRadius: '12px',
+            border: activeTab === 'poi' ? '2px solid #3b82f6' : '1px solid rgba(255,255,255,0.12)',
+            background: activeTab === 'poi' ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255,255,255,0.04)',
+            color: activeTab === 'poi' ? '#60a5fa' : 'rgba(244,247,245,0.7)',
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          📍 POI / Info ({pois.length})
+        </button>
+      </div>
 
-      {/* Events Directory & Checklist */}
-      {eventsToDisplay.length > 0 ? (
+      {/* Directory & Items */}
+      {currentList.length > 0 ? (
         <div className="spectator-route">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <p className="spectator-route__label" style={{ margin: 0 }}>
-              Meet Events ({completedIds.length}/{eventsToDisplay.length} Completed)
+              {activeTab === 'events'
+                ? `Events (${validCompletedCount}/${events.length} Completed)`
+                : `Points of Interest (${pois.length} Locations)`}
             </p>
-            {completedIds.length > 0 && (
+            {activeTab === 'events' && validCompletedCount > 0 && (
               <button
                 type="button"
                 className="btn btn--ghost"
@@ -219,8 +213,10 @@ export function SpectatorView() {
           </div>
 
           <ol className="spectator-point-list">
-            {eventsToDisplay.map((point, index) => {
-              const isCompleted = completedIds.includes(point.id)
+            {currentList.map((point, index) => {
+              const isPOI = point.type === 'poi'
+              const isCompleted = !isPOI && completedIds.includes(point.id)
+
               return (
                 <li key={point.id} className="spectator-point-item">
                   <div
@@ -228,37 +224,75 @@ export function SpectatorView() {
                     onClick={() => setNavigatePoint(point)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <button
-                      type="button"
-                      className={`spectator-check-btn${isCompleted ? ' is-checked' : ''}`}
-                      onClick={(e) => toggleEventCompleted(point.id, e)}
-                      aria-label={isCompleted ? `Mark ${point.name} incomplete` : `Mark ${point.name} completed`}
-                      title={isCompleted ? 'Completed (tap to uncheck)' : 'Mark as completed'}
-                    >
-                      {isCompleted ? '✓' : index + 1}
-                    </button>
+                    {/* Events have checkmark toggle; POIs have clean non-checkable badge */}
+                    {isPOI ? (
+                      <div
+                        className="spectator-poi-icon"
+                        style={{
+                          width: '2.2rem',
+                          height: '2.2rem',
+                          borderRadius: '999px',
+                          display: 'grid',
+                          placeItems: 'center',
+                          background: 'rgba(59, 130, 246, 0.15)',
+                          border: '1.5px solid rgba(59, 130, 246, 0.6)',
+                          color: '#60a5fa',
+                          fontSize: '1rem',
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        📍
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`spectator-check-btn${isCompleted ? ' is-checked' : ''}`}
+                        onClick={(e) => toggleEventCompleted(point.id, e)}
+                        aria-label={isCompleted ? `Mark ${point.name} incomplete` : `Mark ${point.name} completed`}
+                        title={isCompleted ? 'Completed (tap to uncheck)' : 'Mark as completed'}
+                      >
+                        {isCompleted ? '✓' : index + 1}
+                      </button>
+                    )}
+
                     <div className="spectator-point-body">
                       <strong style={isCompleted ? { textDecoration: 'line-through', opacity: 0.7 } : undefined}>
                         {point.name}
                       </strong>
-                      <span>{isCompleted ? 'Completed · Tap for directions' : 'Tap for line-of-sight navigation →'}</span>
+                      <span>
+                        {isPOI
+                          ? 'Tap for line-of-sight navigation →'
+                          : isCompleted
+                          ? 'Completed · Tap for directions'
+                          : 'Tap for line-of-sight navigation →'}
+                      </span>
                     </div>
+
                     <svg className="spectator-point-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                     </svg>
                   </div>
-                  {index < eventsToDisplay.length - 1 && <div className="spectator-connector" aria-hidden="true" />}
+                  {index < currentList.length - 1 && <div className="spectator-connector" aria-hidden="true" />}
                 </li>
               )
             })}
           </ol>
           <div className="spectator-footer-note">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Tap event for navigation · Tap number to mark completed.
+            {activeTab === 'events'
+              ? 'Tap event for navigation · Tap number to mark completed.'
+              : 'Tap any point of interest for line-of-sight navigation.'}
           </div>
         </div>
       ) : (
-        <div className="spectator-empty"><p>No events plotted for this meet yet.</p></div>
+        <div className="spectator-empty">
+          <p>
+            {activeTab === 'events'
+              ? 'No competition events plotted yet.'
+              : 'No points of interest (restrooms, parking, concessions, etc.) added yet.'}
+          </p>
+        </div>
       )}
     </section>
   )

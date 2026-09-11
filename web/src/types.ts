@@ -1,8 +1,11 @@
+export type PointType = 'event' | 'poi'
+
 export interface PointOfInterest {
   id: string
   name: string
   latitude: number
   longitude: number
+  type?: PointType
 }
 
 /** One group's ordered path through a competition's shared points. */

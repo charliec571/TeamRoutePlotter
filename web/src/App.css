@@ -764,6 +764,10 @@
   transform: rotate(-45deg);
 }
 
+.poi-marker__pin--blue {
+  background: #3b82f6;
+}
+
 .leaflet-container {
   font: inherit;
 }

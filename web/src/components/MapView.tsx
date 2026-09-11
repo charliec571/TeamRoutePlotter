@@ -13,8 +13,15 @@ const SEARCH_ZOOM = 14
 const DEFAULT_CENTER: [number, number] = DEV_FIXED_LOCATION ?? [37.7749, -122.4194]
 
 const markerIcon = L.divIcon({
-  className: 'poi-marker',
+  className: 'poi-marker poi-marker--event',
   html: `<span class="poi-marker__pin"></span>`,
+  iconSize: [28, 36],
+  iconAnchor: [14, 36],
+})
+
+const poiMarkerIcon = L.divIcon({
+  className: 'poi-marker poi-marker--poi',
+  html: `<span class="poi-marker__pin poi-marker__pin--blue"></span>`,
   iconSize: [28, 36],
   iconAnchor: [14, 36],
 })
@@ -223,27 +230,30 @@ export function MapView({
           }}
         />
       )}
-      {points.map((point) => (
-        <Marker
-          key={point.id}
-          position={[point.latitude, point.longitude]}
-          icon={markerIcon}
-          title={point.name}
-          draggable={Boolean(onPointMoved)}
-          eventHandlers={{
-            click: () => onSelectPoint?.(point),
-            dragend: (e) => {
-              const marker = e.target
-              const latLng = marker.getLatLng()
-              onPointMoved?.(point.id, latLng.lat, latLng.lng)
-            },
-          }}
-        >
-          <Tooltip direction="top" offset={[0, -32]} opacity={0.92}>
-            <span>{point.name}</span>
-          </Tooltip>
-        </Marker>
-      ))}
+      {points.map((point) => {
+        const isPOI = point.type === 'poi'
+        return (
+          <Marker
+            key={point.id}
+            position={[point.latitude, point.longitude]}
+            icon={isPOI ? poiMarkerIcon : markerIcon}
+            title={point.name}
+            draggable={Boolean(onPointMoved)}
+            eventHandlers={{
+              click: () => onSelectPoint?.(point),
+              dragend: (e) => {
+                const marker = e.target
+                const latLng = marker.getLatLng()
+                onPointMoved?.(point.id, latLng.lat, latLng.lng)
+              },
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -32]} opacity={0.92}>
+              <span>{isPOI ? `📍 ${point.name}` : `🏁 ${point.name}`}</span>
+            </Tooltip>
+          </Marker>
+        )
+      })}
     </MapContainer>
   )
 }

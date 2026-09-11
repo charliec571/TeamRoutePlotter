@@ -277,12 +277,13 @@ export default function App() {
         open={pending !== null}
         latitude={pending?.latitude ?? 0}
         longitude={pending?.longitude ?? 0}
-        onAdd={(name) => {
+        onAdd={(name, type) => {
           if (!pending) return
           addPoint(competition.id, {
             name,
             latitude: pending.latitude,
             longitude: pending.longitude,
+            type,
           })
           setPending(null)
         }}
