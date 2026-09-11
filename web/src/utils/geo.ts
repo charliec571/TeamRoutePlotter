@@ -86,7 +86,34 @@ export function formatDistance(meters: number): string {
 
 const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const
 
-export function formatBearing(degrees: number): string {
+export function getCompassDirection(degrees: number): string {
   const index = Math.round(degrees / 45) % 8
-  return `${COMPASS[index]} · ${Math.round(degrees)}°`
+  return COMPASS[index]
 }
+
+export function formatBearing(degrees: number): string {
+  const dir = getCompassDirection(degrees)
+  return `${dir} · ${Math.round(degrees)}°`
+}
+
+export interface NavigationInstruction {
+  instruction: string
+  distanceText: string
+  direction: string
+  degrees: number
+}
+
+export function getNavigationInstruction(from: GeoPosition, to: GeoPosition): NavigationInstruction {
+  const meters = distanceMeters(from, to)
+  const deg = bearingDegrees(from, to)
+  const dir = getCompassDirection(deg)
+  const dist = formatDistance(meters)
+
+  return {
+    instruction: `Go ${dist} ${dir}`,
+    distanceText: dist,
+    direction: dir,
+    degrees: Math.round(deg),
+  }
+}
+

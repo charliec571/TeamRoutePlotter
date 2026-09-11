@@ -10,11 +10,8 @@ import {
 import L from 'leaflet'
 import type { PointOfInterest } from '../types'
 import {
-  bearingDegrees,
-  distanceMeters,
-  formatBearing,
-  formatDistance,
   getCurrentPosition,
+  getNavigationInstruction,
   type GeoPosition,
 } from '../utils/geo'
 import 'leaflet/dist/leaflet.css'
@@ -79,8 +76,7 @@ export function NavigateView({ point, onBack }: NavigateViewProps) {
     [point.latitude, point.longitude],
   )
 
-  const distance = origin ? distanceMeters(origin, destination) : null
-  const bearing = origin ? bearingDegrees(origin, destination) : null
+  const navInstruction = origin ? getNavigationInstruction(origin, destination) : null
 
   return (
     <div className="navigate-screen">
@@ -99,22 +95,29 @@ export function NavigateView({ point, onBack }: NavigateViewProps) {
             <h1>{point.name}</h1>
           </div>
         </div>
-        {(distance !== null && bearing !== null) || error ? (
+
+        {navInstruction && (
+          <div className="navigate-instruction-card">
+            <span className="navigate-instruction-badge">👉 {navInstruction.instruction}</span>
+          </div>
+        )}
+
+        {navInstruction || error ? (
           <div className="navigate-meta">
             {error ? (
               <p className="navigate-meta__error">{error}</p>
-            ) : (
+            ) : navInstruction ? (
               <>
                 <p>
-                  <strong>{formatDistance(distance!)}</strong>
+                  <strong>{navInstruction.distanceText}</strong>
                   <span>straight-line</span>
                 </p>
                 <p>
-                  <strong>{formatBearing(bearing!)}</strong>
+                  <strong>{navInstruction.direction} · {navInstruction.degrees}°</strong>
                   <span>from you</span>
                 </p>
               </>
-            )}
+            ) : null}
           </div>
         ) : (
           <p className="map-chrome__hint">Finding your position…</p>
