@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { Competition, Group, PointOfInterest } from '../types'
-import { loadCompetitions, saveCompetitions, shuffleIds, sortCompetitionsByDate } from '../utils/storage'
+import {
+  loadCompetitions,
+  saveCompetitions,
+  shuffleIds,
+  sortCompetitionsByDate,
+  parsePointRecord,
+  formatPointForDatabase,
+} from '../utils/storage'
 import { supabase } from '../lib/supabase'
 
 // ─── Supabase sync helpers ────────────────────────────────────────────────────
@@ -23,7 +30,7 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
   const { data: allTeams } = await supabase.from('teams').select('*')
 
 
-  const loaded = comps.map((comp) => ({
+  const loaded: Competition[] = comps.map((comp) => ({
     id: comp.id,
     name: comp.name,
     location: comp.location ?? '',
@@ -31,13 +38,7 @@ async function dbLoadCompetitions(): Promise<Competition[]> {
     createdAt: new Date(comp.created_at.replace(' ', 'T')).getTime(),
     points: (allPoints ?? [])
       .filter((p) => p.competition_id === comp.id)
-      .map((p) => ({
-        id: p.id,
-        name: p.name,
-        latitude: p.latitude,
-        longitude: p.longitude,
-        type: (p.type as 'event' | 'poi') || 'event',
-      })),
+      .map(parsePointRecord),
 
     groups: (allGroups ?? [])
       .filter((g) => g.competition_id === comp.id)
@@ -87,19 +88,21 @@ async function dbUpsertPoint(
   order: number,
 ): Promise<void> {
   if (!supabase) return
+  const { name: dbName, type: dbType } = formatPointForDatabase(point)
   const record: Record<string, unknown> = {
     id: point.id,
     competition_id: competitionId,
-    name: point.name,
+    name: dbName,
     latitude: point.latitude,
     longitude: point.longitude,
     display_order: order,
-    type: point.type || 'event',
+    type: dbType,
   }
 
   const { error } = await supabase.from('points').upsert(record)
   if (error && error.message && error.message.includes('type')) {
     // If the 'type' column is not yet present in Supabase table, retry without it
+    // The POI status is safely encoded in name: '\u200B[POI] ...'
     delete record.type
     await supabase.from('points').upsert(record)
   }

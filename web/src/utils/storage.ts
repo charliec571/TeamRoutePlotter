@@ -89,4 +89,49 @@ export function filterActiveCompetitions(competitions: Competition[]): Competiti
   return competitions.filter((comp) => !isDateInPast(comp.date))
 }
 
+export const POI_MARKER = '\u200B[POI]'
+
+/** Parses a point record from Supabase or localStorage, decoding POI status. */
+export function parsePointRecord(p: {
+  id: string
+  name: string
+  latitude: number
+  longitude: number
+  type?: string
+}): PointOfInterest {
+  const rawName = typeof p.name === 'string' ? p.name : ''
+  const hasPoiMarker = rawName.includes(POI_MARKER) || rawName.startsWith('[POI]')
+  const isPOI = p.type === 'poi' || hasPoiMarker
+  const cleanName = rawName
+    .replace(POI_MARKER, '')
+    .replace('[POI]', '')
+    .trim()
+
+  return {
+    id: p.id,
+    name: cleanName,
+    latitude: p.latitude,
+    longitude: p.longitude,
+    type: isPOI ? 'poi' : 'event',
+  }
+}
+
+/** Formats a point record for database upsert with encoded fallback for type. */
+export function formatPointForDatabase(point: PointOfInterest): {
+  name: string
+  type: 'event' | 'poi'
+} {
+  const cleanName = point.name
+    .replace(POI_MARKER, '')
+    .replace('[POI]', '')
+    .trim()
+  const isPOI = point.type === 'poi'
+
+  return {
+    name: isPOI ? `${POI_MARKER} ${cleanName}` : cleanName,
+    type: isPOI ? 'poi' : 'event',
+  }
+}
+
+
 

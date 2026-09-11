@@ -43,12 +43,22 @@ export function HomeScreen({ competitions, onCreate, onOpen, onDelete }: HomeScr
   return (
     <section className="panel-screen">
       <header className="panel-screen__header">
-        <div className="map-chrome__brand panel-brand">
-          <span className="brand-mark" aria-hidden="true" />
-          <div>
-            <p className="eyebrow">Team Route Plotter</p>
-            <h1>Competitions</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="map-chrome__brand panel-brand">
+            <span className="brand-mark" aria-hidden="true" />
+            <div>
+              <p className="eyebrow">Team Route Plotter</p>
+              <h1>Competitions</h1>
+            </div>
           </div>
+          <a
+            href="#/"
+            className="btn btn--secondary"
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', padding: '0.5rem 0.75rem' }}
+            title="Return to public Active Meets page"
+          >
+            👁 Public Meets
+          </a>
         </div>
         <p className="panel-lead">
           Map shared stops once, then give each group its own order.

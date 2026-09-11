@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Competition } from '../types'
-import { loadCompetitions } from '../utils/storage'
+import { loadCompetitions, parsePointRecord } from '../utils/storage'
 
 /**
  * Loads a single competition by ID from Supabase (or localStorage fallback).
@@ -56,13 +56,7 @@ export function usePublicCompetition(competitionId: string) {
             location: comp.location ?? '',
             date: comp.date ?? '',
             createdAt: new Date(comp.created_at.replace(' ', 'T')).getTime(),
-            points: (points ?? []).map((p) => ({
-              id: p.id,
-              name: p.name,
-              latitude: p.latitude,
-              longitude: p.longitude,
-              type: (p.type as 'event' | 'poi') || 'event',
-            })),
+            points: (points ?? []).map(parsePointRecord),
             groups: (groups ?? []).map((g) => ({
               id: g.id,
               name: g.name,
@@ -85,7 +79,10 @@ export function usePublicCompetition(competitionId: string) {
           const all = loadCompetitions()
           const found = all.find((c) => c.id === competitionId)
           if (!found) throw new Error('Competition not found')
-          setCompetition(found)
+          setCompetition({
+            ...found,
+            points: found.points.map(parsePointRecord),
+          })
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load meet')
