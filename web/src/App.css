@@ -830,17 +830,36 @@
 
 /* ─── Spectator / Parent View ────────────────────────────────────────────── */
 
+/* Two-panel layout: top panel is sticky, bottom panel scrolls */
 .spectator-screen {
   display: flex;
   flex-direction: column;
   height: 100dvh;
   max-height: 100dvh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden; /* prevent the outer section from scrolling at all */
   background: linear-gradient(160deg, #0f1c18 0%, #152820 50%, #0f1c18 100%);
   color: var(--surface);
-  padding: calc(1rem + var(--safe-top)) 1rem calc(2.5rem + var(--safe-bottom));
-  gap: 0.9rem;
+}
+
+/* Top panel: header + team bar + tab toggle — NEVER moves */
+.spectator-top-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: calc(0.9rem + var(--safe-top)) 1rem 0.6rem;
+  background: linear-gradient(160deg, #0f1c18 0%, #152820 100%);
+  /* Subtle bottom edge to separate from the scrollable list */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Bottom panel: ONLY this scrolls */
+.spectator-scroll-panel {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.75rem 1rem calc(2.5rem + var(--safe-bottom));
 }
 
 .spectator-header {
@@ -1283,10 +1302,7 @@
   margin: 0;
   padding: 0 0.25rem 0 0;
   list-style: none;
-  max-height: 24.2rem; /* peek effect: shows 5 1/2 events */
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  /* No max-height here — the .spectator-scroll-panel wrapper handles overflow */
 }
 
 .spectator-point-list::-webkit-scrollbar {
