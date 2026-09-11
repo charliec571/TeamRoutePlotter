@@ -60,3 +60,11 @@ export interface EventPresenceStatus {
   heatLevel: PresenceHeatLevel
   heatScore: number
 }
+
+export interface TeamMessage {
+  id: string
+  text: string
+  createdAt: number
+  senderId?: string
+}
+

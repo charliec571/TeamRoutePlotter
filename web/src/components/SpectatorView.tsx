@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { AdminLoginModal } from './AdminLoginModal'
 import { usePublicCompetition } from '../hooks/usePublicCompetition'
 import { useTeamPresence } from '../hooks/useTeamPresence'
+import { TeamMessageBoard } from './TeamMessageBoard'
 import { NavigateView } from './NavigateView'
 import type { PointOfInterest } from '../types'
 
@@ -259,17 +260,26 @@ export function SpectatorView() {
           </div>
 
           {selectedTeamId && (
-            <div className="spectator-presence-status">
-              <span className="spectator-presence-pill">
-                <span className={`presence-dot ${gpsActive ? 'presence-dot--live' : 'presence-dot--waiting'}`} />
-                {activeUsersCount > 0
-                  ? `${activeUsersCount} team follower${activeUsersCount === 1 ? '' : 's'} online`
-                  : 'Connecting to team radar...'}
-              </span>
-              {!gpsActive && (
-                <span className="spectator-presence-hint">Enable location to share radar</span>
-              )}
-            </div>
+            <>
+              <div className="spectator-presence-status">
+                <span className="spectator-presence-pill">
+                  <span className={`presence-dot ${gpsActive ? 'presence-dot--live' : 'presence-dot--waiting'}`} />
+                  {activeUsersCount > 0
+                    ? `${activeUsersCount} team follower${activeUsersCount === 1 ? '' : 's'} online`
+                    : 'Connecting to team radar...'}
+                </span>
+                {!gpsActive && (
+                  <span className="spectator-presence-hint">Enable location to share radar</span>
+                )}
+              </div>
+
+              {/* Team Message Window */}
+              <TeamMessageBoard
+                competitionId={competitionId ?? ''}
+                teamId={selectedTeamId}
+                teamName={availableTeams.find((t) => t.id === selectedTeamId)?.name}
+              />
+            </>
           )}
         </div>
       )}

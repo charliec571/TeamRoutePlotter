@@ -1055,6 +1055,161 @@
   }
 }
 
+/* Team Message Board (80-character live team updates) */
+.team-msg-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.team-msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.team-msg-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.team-msg-privacy-hint {
+  font-size: 0.68rem;
+  color: rgba(244, 247, 245, 0.45);
+}
+
+.team-msg-list {
+  max-height: 125px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-right: 0.2rem;
+  overscroll-behavior: contain;
+}
+
+.team-msg-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.team-msg-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+
+.team-msg-empty {
+  font-size: 0.76rem;
+  font-style: italic;
+  color: rgba(244, 247, 245, 0.45);
+  padding: 0.4rem 0.2rem;
+  text-align: center;
+}
+
+.team-msg-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+}
+
+.team-msg-text {
+  font-size: 0.82rem;
+  color: #f4f7f5;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.team-msg-time {
+  font-size: 0.65rem;
+  color: rgba(244, 247, 245, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.team-msg-form {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.team-msg-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.team-msg-input {
+  width: 100%;
+  padding: 0.45rem 2.2rem 0.45rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(14, 26, 20, 0.85);
+  color: #f4f7f5;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.team-msg-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(232, 137, 58, 0.25);
+}
+
+.team-msg-counter {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 247, 245, 0.4);
+  pointer-events: none;
+}
+
+.team-msg-counter.is-low {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.team-msg-send-btn {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #1a1208;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.team-msg-send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.team-msg-send-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+
 /* Route list */
 .spectator-route {
   display: flex;

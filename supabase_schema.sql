@@ -53,25 +53,39 @@ CREATE TABLE IF NOT EXISTS teams (
 );
 CREATE INDEX IF NOT EXISTS idx_teams_school_id ON teams(school_id);
 
+-- 6. Team Messages (ephemeral team board / announcements, up to 80 chars)
+CREATE TABLE IF NOT EXISTS team_messages (
+  id             TEXT PRIMARY KEY,
+  competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
+  team_id        UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  text           VARCHAR(80) NOT NULL,
+  created_at     TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_team_messages_team ON team_messages(competition_id, team_id);
+
 -- ═══════════════════════════════════════════════════════════════════
 -- Row Level Security (RLS) — public read, no auth write for now
 -- ═══════════════════════════════════════════════════════════════════
-ALTER TABLE competitions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE points       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE groups       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE schools      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE teams        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE competitions   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE points         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE groups         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE schools        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teams          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_messages  ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read (for the public spectator view)
-CREATE POLICY "Public read competitions" ON competitions FOR SELECT USING (true);
-CREATE POLICY "Public read points"       ON points       FOR SELECT USING (true);
-CREATE POLICY "Public read groups"       ON groups       FOR SELECT USING (true);
-CREATE POLICY "Public read schools"      ON schools      FOR SELECT USING (true);
-CREATE POLICY "Public read teams"        ON teams        FOR SELECT USING (true);
+CREATE POLICY "Public read competitions"  ON competitions  FOR SELECT USING (true);
+CREATE POLICY "Public read points"        ON points        FOR SELECT USING (true);
+CREATE POLICY "Public read groups"        ON groups        FOR SELECT USING (true);
+CREATE POLICY "Public read schools"       ON schools       FOR SELECT USING (true);
+CREATE POLICY "Public read teams"         ON teams         FOR SELECT USING (true);
+CREATE POLICY "Public read team_messages" ON team_messages FOR SELECT USING (true);
 
 -- Anyone can write (admin PIN/auth can be added later)
-CREATE POLICY "Public write competitions" ON competitions FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public write points"       ON points       FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public write groups"       ON groups       FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public write schools"      ON schools      FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public write teams"        ON teams        FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write competitions"  ON competitions  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write points"        ON points        FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write groups"        ON groups        FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write schools"       ON schools       FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write teams"         ON teams         FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public write team_messages" ON team_messages FOR ALL USING (true) WITH CHECK (true);
+
