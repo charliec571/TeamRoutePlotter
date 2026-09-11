@@ -5,6 +5,7 @@ interface TeamMessageBoardProps {
   competitionId: string
   teamId: string
   teamName?: string
+  onClose?: () => void
 }
 
 function formatTime(timestamp: number): string {
@@ -18,16 +19,18 @@ function formatTime(timestamp: number): string {
   return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
-export function TeamMessageBoard({ competitionId, teamId, teamName }: TeamMessageBoardProps) {
+export function TeamMessageBoard({ competitionId, teamId, teamName, onClose }: TeamMessageBoardProps) {
   const { messages, sendMessage, sending } = useTeamMessages(competitionId, teamId)
   const [inputText, setInputText] = useState('')
-  const listEndRef = useRef<HTMLDivElement>(null)
+  const listContainerRef = useRef<HTMLDivElement>(null)
 
   const remainingChars = 80 - inputText.length
 
-  // Auto-scroll to newest message
+  // Only scroll the internal message box, NEVER the document window!
   useEffect(() => {
-    listEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (listContainerRef.current) {
+      listContainerRef.current.scrollTop = listContainerRef.current.scrollHeight
+    }
   }, [messages.length])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,11 +50,24 @@ export function TeamMessageBoard({ competitionId, teamId, teamName }: TeamMessag
           </svg>
           {teamName ? `${teamName} Chat` : 'Team Chat'}
         </span>
-        <span className="team-msg-privacy-hint">Shared with team · 80 char limit</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span className="team-msg-privacy-hint">80 char limit</span>
+          {onClose && (
+            <button
+              type="button"
+              className="team-msg-close-btn"
+              onClick={onClose}
+              aria-label="Hide Chat"
+              title="Hide Chat"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Messages list */}
-      <div className="team-msg-list">
+      <div className="team-msg-list" ref={listContainerRef}>
         {messages.length === 0 ? (
           <div className="team-msg-empty">
             No updates yet. Post where you are or what's next!
@@ -64,7 +80,6 @@ export function TeamMessageBoard({ competitionId, teamId, teamName }: TeamMessag
             </div>
           ))
         )}
-        <div ref={listEndRef} />
       </div>
 
       {/* Composer */}

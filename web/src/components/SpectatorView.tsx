@@ -98,6 +98,7 @@ export function SpectatorView() {
   )
 
   const [activeTab, setActiveTab] = useState<'events' | 'poi'>('events')
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   // Private local checklist stored 100% on this parent's phone (only for events)
   const storageKey = competition ? `raider_done_${competition.id}` : ''
@@ -268,17 +269,30 @@ export function SpectatorView() {
                     ? `${activeUsersCount} team follower${activeUsersCount === 1 ? '' : 's'} online`
                     : 'Connecting to team radar...'}
                 </span>
-                {!gpsActive && (
-                  <span className="spectator-presence-hint">Enable location to share radar</span>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {!gpsActive && (
+                    <span className="spectator-presence-hint">Enable location</span>
+                  )}
+                  <button
+                    type="button"
+                    className="team-chat-toggle-btn"
+                    onClick={() => setIsChatOpen((v) => !v)}
+                    aria-expanded={isChatOpen}
+                  >
+                    💬 Team Chat {isChatOpen ? '▲' : '▼'}
+                  </button>
+                </div>
               </div>
 
-              {/* Team Message Window */}
-              <TeamMessageBoard
-                competitionId={competitionId ?? ''}
-                teamId={selectedTeamId}
-                teamName={availableTeams.find((t) => t.id === selectedTeamId)?.name}
-              />
+              {/* Collapsible Team Message Window */}
+              {isChatOpen && (
+                <TeamMessageBoard
+                  competitionId={competitionId ?? ''}
+                  teamId={selectedTeamId}
+                  teamName={availableTeams.find((t) => t.id === selectedTeamId)?.name}
+                  onClose={() => setIsChatOpen(false)}
+                />
+              )}
             </>
           )}
         </div>
