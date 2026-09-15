@@ -66,5 +66,7 @@ export interface TeamMessage {
   text: string
   createdAt: number
   senderId?: string
+  team_id: string
 }
+
 

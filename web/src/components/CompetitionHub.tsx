@@ -50,7 +50,8 @@ export function CompetitionHub({
   const [showQR, setShowQR] = useState(false)
   const [showBroadcast, setShowBroadcast] = useState(false)
   const [broadcastText, setBroadcastText] = useState('')
-  const [addingPoint, setAddingPoint] = useState(false)
+  const [editingPoint, setEditingPoint] = useState<PointOfInterest | null>(null);
+  const [addingPoint, setAddingPoint] = useState(false);
   const [newPointType, setNewPointType] = useState<'event' | 'poi'>('event')
   const [newPointName, setNewPointName] = useState('')
   const [newPointLat, setNewPointLat] = useState('')
@@ -128,22 +129,7 @@ export function CompetitionHub({
     📣 Broadcast
   </button>
 </header>
-          <button type="button" className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Back">
-            ←
-          </button>
-          <div style={{ flex: 1 }}>
-            <p className="eyebrow">Competition</p>
-            <h1>{competition.name}</h1>
-          </div>
-          {/* Broadcast button */}
-          <button
-            type="button"
-            className="btn btn--secondary broadcast-btn"
-            onClick={() => setShowBroadcast(true)}
-            title="Broadcast to all teams"
-          >
-            📣 Broadcast
-          </button>
+
 
       
         {showBroadcast && (

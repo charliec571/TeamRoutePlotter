@@ -21,7 +21,7 @@ export async function broadcastToAllTeams(competition: Competition, rawText: str
   );
 
   // Insert all messages in one batch.
-  await supabase.from('team_messages').insert(teamMessages as any);
+  if (!supabase) { console.error('Supabase client not configured'); return; }
 
   // Notify each team via realtime broadcast.
   for (const team of competition.schools.flatMap((s) => s.teams)) {
