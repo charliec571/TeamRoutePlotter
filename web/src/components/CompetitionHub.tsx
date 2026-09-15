@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { Competition, PointOfInterest, PointType } from '../types'
-import { QRModal } from './QRModal'
+import { QRModal } from './QRModal';
+import { broadcastToAllTeams } from '../hooks/useAdminBroadcast';
 import { EditPointDialog } from './EditPointDialog'
 
 interface CompetitionHubProps {
@@ -47,7 +48,8 @@ export function CompetitionHub({
   const [addingTeamToSchool, setAddingTeamToSchool] = useState<string | null>(null)
   const [teamName, setTeamName] = useState('')
   const [showQR, setShowQR] = useState(false)
-  const [editingPoint, setEditingPoint] = useState<PointOfInterest | null>(null)
+  const [showBroadcast, setShowBroadcast] = useState(false)
+  const [broadcastText, setBroadcastText] = useState('')
   const [addingPoint, setAddingPoint] = useState(false)
   const [newPointType, setNewPointType] = useState<'event' | 'poi'>('event')
   const [newPointName, setNewPointName] = useState('')
@@ -108,43 +110,81 @@ export function CompetitionHub({
         onCancel={() => setEditingPoint(null)}
       />
 
-      <header className="route-screen__header">
-        <button type="button" className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Back">
-          ←
-        </button>
-        <div style={{ flex: 1 }}>
-          <p className="eyebrow">Competition</p>
-          <h1>{competition.name}</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-          <a
-            href={`#/view/${competition.id}`}
-            className="btn btn--secondary"
-            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', padding: '0.5rem 0.75rem' }}
-            title="Open public spectator view"
-          >
-            👁 Public View
-          </a>
+              <header className="route-screen__header">
+  <button type="button" className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Back">
+    ←
+  </button>
+  <div style={{ flex: 1 }}>
+    <p className="eyebrow">Competition</p>
+    <h1>{competition.name}</h1>
+  </div>
+  {/* Broadcast button */}
+  <button
+    type="button"
+    className="btn btn--secondary broadcast-btn"
+    onClick={() => setShowBroadcast(true)}
+    title="Broadcast to all teams"
+  >
+    📣 Broadcast
+  </button>
+</header>
+          <button type="button" className="btn btn--ghost btn--icon" onClick={onBack} aria-label="Back">
+            ←
+          </button>
+          <div style={{ flex: 1 }}>
+            <p className="eyebrow">Competition</p>
+            <h1>{competition.name}</h1>
+          </div>
+          {/* Broadcast button */}
           <button
             type="button"
-            className="btn btn--secondary qr-header-btn"
-            onClick={() => setShowQR(true)}
-            aria-label="Share QR code"
-            title="Share with parents"
+            className="btn btn--secondary broadcast-btn"
+            onClick={() => setShowBroadcast(true)}
+            title="Broadcast to all teams"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="3" height="3" rx="0.5"/>
-              <rect x="19" y="14" width="2" height="2" rx="0.5"/>
-              <rect x="14" y="19" width="2" height="2" rx="0.5"/>
-              <rect x="19" y="19" width="2" height="2" rx="0.5"/>
-            </svg>
-            Share
+            📣 Broadcast
           </button>
-        </div>
-      </header>
+
+      
+        {showBroadcast && (
+          <div className="admin-broadcast-panel" style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+            <input
+              type="text"
+              className="admin-broadcast-input"
+              placeholder="Broadcast to all teams (max 80 chars)"
+              value={broadcastText}
+              onChange={(e) => setBroadcastText(e.target.value.slice(0, 80))}
+              maxLength={80}
+              style={{ width: '100%', marginBottom: '0.5rem', padding: '0.4rem', background: 'var(--color-bg)', color: 'var(--color-text)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                className="admin-broadcast-send btn btn--primary"
+                onClick={async () => {
+                  if (!broadcastText.trim()) return;
+                  await broadcastToAllTeams(competition, broadcastText.trim());
+                  setBroadcastText('');
+                  setShowBroadcast(false);
+                }}
+                disabled={!broadcastText.trim()}
+              >
+                Send
+              </button>
+              <button
+                type="button"
+                className="admin-broadcast-cancel btn btn--ghost"
+                onClick={() => {
+                  setBroadcastText('');
+                  setShowBroadcast(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
 
       <div className="segmented" role="tablist" aria-label="Competition sections">
         <button

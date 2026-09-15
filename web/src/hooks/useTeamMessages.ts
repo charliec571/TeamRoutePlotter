@@ -51,7 +51,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
             .eq('competition_id', competitionId)
             .eq('team_id', teamId)
             .order('created_at', { ascending: true })
-            .limit(40)
+            .limit(200)
 
           if (!error && Array.isArray(data)) {
             const dbMsgs: TeamMessage[] = data.map((d) => ({
@@ -66,11 +66,11 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
               for (const m of dbMsgs) map.set(m.id, m)
               const combined = Array.from(map.values()).sort((a, b) => a.createdAt - b.createdAt)
               try {
-                if (storageKey) localStorage.setItem(storageKey, JSON.stringify(combined.slice(-40)))
+                if (storageKey) localStorage.setItem(storageKey, JSON.stringify(combined.slice(-200)))
               } catch {
                 // Ignore
               }
-              return combined.slice(-40)
+              return combined.slice(-200)
             })
           }
         } catch {
@@ -100,7 +100,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
       if (payload && payload.id && payload.text) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === payload.id)) return prev
-          const next = [...prev, payload as TeamMessage].slice(-40)
+          const next = [...prev, payload as TeamMessage].slice(-200)
           try {
             if (storageKey) localStorage.setItem(storageKey, JSON.stringify(next))
           } catch {
@@ -138,7 +138,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
             }
           }
           if (!updated) return prev
-          const next = Array.from(map.values()).sort((a, b) => a.createdAt - b.createdAt).slice(-40)
+          const next = Array.from(map.values()).sort((a, b) => a.createdAt - b.createdAt).slice(-200)
           try {
             if (storageKey) localStorage.setItem(storageKey, JSON.stringify(next))
           } catch {
@@ -174,7 +174,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
 
       // Optimistically append locally
       setMessages((prev) => {
-        const next = [...prev, newMsg].slice(-40)
+        const next = [...prev, newMsg].slice(-200)
         try {
           if (storageKey) localStorage.setItem(storageKey, JSON.stringify(next))
         } catch {

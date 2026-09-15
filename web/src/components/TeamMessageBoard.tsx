@@ -26,12 +26,17 @@ export function TeamMessageBoard({ competitionId, teamId, teamName, onClose }: T
 
   const remainingChars = 80 - inputText.length
 
-  // Only scroll the internal message box, NEVER the document window!
+  const hasInitialLoad = useRef(false);
+  // Only scroll when a new message arrives after the initial load
   useEffect(() => {
-    if (listContainerRef.current) {
-      listContainerRef.current.scrollTop = listContainerRef.current.scrollHeight
+    if (!hasInitialLoad.current) {
+      hasInitialLoad.current = true;
+      return;
     }
-  }, [messages.length])
+    if (listContainerRef.current) {
+      listContainerRef.current.scrollTop = listContainerRef.current.scrollHeight;
+    }
+  }, [messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
