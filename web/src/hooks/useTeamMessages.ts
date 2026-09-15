@@ -57,6 +57,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
             const dbMsgs: TeamMessage[] = data.map((d) => ({
               id: d.id,
               text: d.text,
+              team_id: d.team_id,
               createdAt: new Date(d.created_at).getTime(),
             }))
 
@@ -170,6 +171,7 @@ export function useTeamMessages(competitionId: string, teamId: string | null) {
         text,
         createdAt: Date.now(),
         senderId: userId,
+        team_id: teamId,
       }
 
       // Optimistically append locally
