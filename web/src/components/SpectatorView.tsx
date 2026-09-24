@@ -6,6 +6,7 @@ import { usePublicCompetition } from '../hooks/usePublicCompetition'
 import { useTeamPresence } from '../hooks/useTeamPresence'
 import { TeamMessageBoard } from './TeamMessageBoard'
 import { NavigateView } from './NavigateView'
+import { resolveRoute } from '../utils/storage'
 import type { PointOfInterest } from '../types'
 
 export function SpectatorView() {
@@ -80,11 +81,32 @@ export function SpectatorView() {
     }
   }
 
-  // Separate points into Events and Points of Interest (POI)
-  const events = useMemo(
-    () => competition?.points.filter((p) => p.type !== 'poi') ?? [],
-    [competition],
+  const selectedTeam = useMemo(() => {
+    if (!selectedTeamId || !competition) return undefined
+    const inCurrent = currentSchool?.teams.find((t) => t.id === selectedTeamId)
+    if (inCurrent) return inCurrent
+    for (const school of competition.schools) {
+      const found = school.teams.find((t) => t.id === selectedTeamId)
+      if (found) return found
+    }
+    return undefined
+  }, [competition, currentSchool, selectedTeamId])
+
+  const selectedGroup = useMemo(
+    () => competition?.groups.find((g) => g.id === selectedTeam?.groupId),
+    [competition, selectedTeam],
   )
+
+  // Separate points into Events and Points of Interest (POI).
+  // If a team is selected and assigned to a group, order events by that group's routeOrder.
+  const events = useMemo(() => {
+    const rawEvents = competition?.points.filter((p) => p.type !== 'poi') ?? []
+    if (!selectedGroup || !selectedGroup.routeOrder || selectedGroup.routeOrder.length === 0) {
+      return rawEvents
+    }
+    return resolveRoute(rawEvents, selectedGroup.routeOrder)
+  }, [competition, selectedGroup])
+
   const pois = useMemo(
     () => competition?.points.filter((p) => p.type === 'poi') ?? [],
     [competition],
@@ -253,9 +275,14 @@ export function SpectatorView() {
                     onChange={(e) => handleTeamChange(e.target.value)}
                   >
                     <option value="">Select Team...</option>
-                    {availableTeams.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
+                    {availableTeams.map((t) => {
+                      const group = competition.groups.find((g) => g.id === t.groupId)
+                      return (
+                        <option key={t.id} value={t.id}>
+                          {t.name}{group ? ` (${group.name})` : ''}
+                        </option>
+                      )
+                    })}
                   </select>
                 </div>
               )}
@@ -348,7 +375,9 @@ export function SpectatorView() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
               <p className="spectator-route__label" style={{ margin: 0 }}>
                 {activeTab === 'events'
-                  ? `Events (${validCompletedCount}/${events.length} Completed)`
+                  ? selectedGroup
+                    ? `Events · ${selectedGroup.name} Route (${validCompletedCount}/${events.length} Completed)`
+                    : `Events (${validCompletedCount}/${events.length} Completed)`
                   : `Points of Interest (${pois.length} Locations)`}
               </p>
               {activeTab === 'events' && validCompletedCount > 0 && (

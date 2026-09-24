@@ -170,7 +170,8 @@ export default function App() {
       )
     }
 
-    const orderedPoints = resolveRoute(competition.points, group.routeOrder)
+    const eventPoints = competition.points.filter((p) => p.type !== 'poi')
+    const orderedPoints = resolveRoute(eventPoints, group.routeOrder)
 
     return (
       <div className="app">

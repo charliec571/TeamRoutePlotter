@@ -28,9 +28,21 @@ export function resolveRoute(
   routeOrder: string[],
 ): PointOfInterest[] {
   const byId = new Map(points.map((point) => [point.id, point]))
-  return routeOrder
-    .map((id) => byId.get(id))
-    .filter((point): point is PointOfInterest => point !== undefined)
+  const ordered: PointOfInterest[] = []
+
+  for (const id of routeOrder) {
+    const point = byId.get(id)
+    if (point) {
+      ordered.push(point)
+      byId.delete(id)
+    }
+  }
+
+  for (const remaining of byId.values()) {
+    ordered.push(remaining)
+  }
+
+  return ordered
 }
 
 /** Sort competitions by lowest date at the top (ascending order). */

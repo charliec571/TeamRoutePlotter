@@ -225,17 +225,22 @@ export function useCompetitions() {
       }
 
       updateCompetition(competitionId, (competition) => {
+        const isEvent = newPoint.type !== 'poi'
         const updated = {
           ...competition,
           points: [...competition.points, newPoint],
-          groups: competition.groups.map((group) => ({
-            ...group,
-            routeOrder: [...group.routeOrder, newPoint.id],
-          })),
+          groups: isEvent
+            ? competition.groups.map((group) => ({
+                ...group,
+                routeOrder: [...group.routeOrder, newPoint.id],
+              }))
+            : competition.groups,
         }
         // Sync new point and updated group orders to DB
         dbUpsertPoint(competitionId, newPoint, updated.points.length - 1)
-        updated.groups.forEach((g) => dbUpsertGroup(competitionId, g))
+        if (isEvent) {
+          updated.groups.forEach((g) => dbUpsertGroup(competitionId, g))
+        }
         return updated
       })
     },
@@ -298,7 +303,9 @@ export function useCompetitions() {
       let createdId = ''
 
       updateCompetition(competitionId, (competition) => {
-        const pointIds = competition.points.map((point) => point.id)
+        const pointIds = competition.points
+          .filter((point) => point.type !== 'poi')
+          .map((point) => point.id)
         const group: Group = {
           id: uuidv4(),
           name: name.trim(),
